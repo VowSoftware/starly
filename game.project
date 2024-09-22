@@ -1,0 +1,34 @@
+[bootstrap]
+main_collection = /collections/main.collectionc
+render = /renders/starly.renderc
+
+[script]
+shared_state = 1
+
+[display]
+width = 1920
+height = 1080
+high_dpi = 1
+
+[android]
+input_method = HiddenInputField
+
+[project]
+title = Starly
+version = 0.0.0
+publisher = Vow Software
+developer = Vow Software
+
+[library]
+include_dirs = starly
+
+[graphics]
+default_texture_min_filter = nearest
+default_texture_mag_filter = nearest
+
+[input]
+game_binding = /builtins/input/all.input_bindingc
+
+[html5]
+cssfile = /builtins/manifests/web/dark_theme.css
+

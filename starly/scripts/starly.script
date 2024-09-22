@@ -1,0 +1,132 @@
+--------------------------------------------------------------------------------
+-- Header
+--------------------------------------------------------------------------------
+
+-- GitHub: https://github.com/VowSoftware/starly
+
+--------------------------------------------------------------------------------
+-- Dependencies
+--------------------------------------------------------------------------------
+
+local m_starly = require "starly.modules.starly"
+
+--------------------------------------------------------------------------------
+-- Constants
+--------------------------------------------------------------------------------
+
+local c_behavior_center = hash("center")
+local c_behavior_expand = hash("expand")
+local c_behavior_stretch = hash("stretch")
+
+local c_display_width = sys.get_config_int("display.width")
+local c_display_height = sys.get_config_int("display.height")
+
+--------------------------------------------------------------------------------
+-- Properties
+--------------------------------------------------------------------------------
+
+go.property("behavior", hash("center"))
+go.property("viewport_x", 0)
+go.property("viewport_y", 0)
+go.property("viewport_width", 960)
+go.property("viewport_height", 640)
+go.property("near", -1)
+go.property("far", 1)
+go.property("zoom", 1)
+go.property("zoom_max", 1)
+go.property("zoom_min", 1)
+
+--------------------------------------------------------------------------------
+-- Local Functions
+--------------------------------------------------------------------------------
+
+local function clamp_properties(self)
+	if self.zoom < self.zoom_min then
+		self.zoom = self.zoom_min
+	elseif self.zoom > self.zoom_max then
+		self.zoom = self.zoom_max
+	end
+end
+
+local function get_static_viewport(self)
+	local window_width, window_height = window.get_size()
+	local window_scale_x, window_scale_y = window_width / c_display_width, window_height / c_display_height
+	return self.viewport_x * window_scale_x, self.viewport_y * window_scale_y, self.viewport_width * window_scale_x, self.viewport_height * window_scale_y
+end
+
+local function get_dynamic_viewport(self)
+	local window_width, window_height = window.get_size()
+	local window_scale_x, window_scale_y = window_width / c_display_width, window_height / c_display_height
+	if window_scale_x < window_scale_y then
+		local margin = (window_scale_y - window_scale_x) * window_height * 0.5
+		return self.viewport_x * window_scale_x, self.viewport_y * window_scale_y + margin, self.viewport_width * window_scale_x, self.viewport_height * window_scale_y - margin * 2
+	end
+	if window_scale_y < window_scale_x then
+		local margin = (window_scale_x - window_scale_y) * window_width * 0.5
+		return self.viewport_x * window_scale_x + margin, self.viewport_y * window_scale_y, self.viewport_width * window_scale_x - margin * 2, self.viewport_height * window_scale_y
+	end
+	return self.viewport_x * window_scale_x, self.viewport_y * window_scale_y, self.viewport_width * window_scale_x, self.viewport_height * window_scale_y
+end
+
+local function get_center_projection(self)
+	local left = -c_display_width * 0.5 / self.zoom
+	local right = c_display_width * 0.5 / self.zoom
+	local bottom = -c_display_height * 0.5 / self.zoom
+	local top = c_display_height * 0.5 / self.zoom
+	return vmath.matrix4_orthographic(left, right, bottom, top, self.near, self.far)
+end
+
+local function get_expand_projection(self)
+	local window_width, window_height = window.get_size()
+	local left = -window_width * 0.5 / self.zoom
+	local right = window_width * 0.5 / self.zoom
+	local bottom = -window_height * 0.5 / self.zoom
+	local top = window_height * 0.5 / self.zoom
+	return vmath.matrix4_orthographic(left, right, bottom, top, self.near, self.far)
+end
+
+local function get_stretch_projection(self)
+	local left = -c_display_width * 0.5 / self.zoom
+	local right = c_display_width * 0.5 / self.zoom
+	local bottom = -c_display_height * 0.5 / self.zoom
+	local top = c_display_height * 0.5 / self.zoom
+	return vmath.matrix4_orthographic(left, right, bottom, top, self.near, self.far)
+end
+
+--------------------------------------------------------------------------------
+-- Engine Functions
+--------------------------------------------------------------------------------
+
+function init(self)
+	local id = go.get_id()
+	m_starly[id] =
+	{
+		viewport_x = self.viewport_x,
+		viewport_y = self.viewport_y,
+		viewport_width = self.viewport_width,
+		viewport_height = self.viewport_height,
+		view = vmath.matrix4(),
+		projection = vmath.matrix4()
+	}
+end
+
+function final(self)
+	local id = go.get_id()
+	m_starly[id] = nil
+end
+
+function update(self, dt)
+	clamp_properties(self)
+	local id = go.get_id()
+	m_starly[id].view = vmath.inv(go.get_world_transform(id))
+	if self.behavior == c_behavior_center then
+		m_starly[id].viewport_x, m_starly[id].viewport_y, m_starly[id].viewport_width, m_starly[id].viewport_height = get_dynamic_viewport(self)
+		m_starly[id].projection = get_center_projection(self)
+	elseif self.behavior == c_behavior_expand then
+		m_starly[id].viewport_x, m_starly[id].viewport_y, m_starly[id].viewport_width, m_starly[id].viewport_height = get_static_viewport(self)
+		m_starly[id].projection = get_expand_projection(self)
+	elseif self.behavior == c_behavior_stretch then
+		m_starly[id].viewport_x, m_starly[id].viewport_y, m_starly[id].viewport_width, m_starly[id].viewport_height = get_static_viewport(self)
+		m_starly[id].projection = get_stretch_projection(self)
+	end
+end

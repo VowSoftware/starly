@@ -1,0 +1,52 @@
+--------------------------------------------------------------------------------
+-- Header
+--------------------------------------------------------------------------------
+
+-- GitHub: https://github.com/VowSoftware/starly
+
+--------------------------------------------------------------------------------
+-- Dependencies
+--------------------------------------------------------------------------------
+
+local m_starly = require "starly.modules.starly"
+
+--------------------------------------------------------------------------------
+-- Constants
+--------------------------------------------------------------------------------
+
+local c_id_starly = hash("/starly")
+
+local c_default_buffer_values = { [graphics.BUFFER_TYPE_COLOR0_BIT] = vmath.vector4(0.114, 0.027, 0.024, 1) }
+
+--------------------------------------------------------------------------------
+-- Variables
+--------------------------------------------------------------------------------
+
+local v_predicate_tile = nil
+
+--------------------------------------------------------------------------------
+-- Local Functions
+--------------------------------------------------------------------------------
+
+local function activate_camera(id)
+	render.set_viewport(m_starly[id].viewport_x, m_starly[id].viewport_y, m_starly[id].viewport_width, m_starly[id].viewport_height)
+	render.set_view(m_starly[id].view)
+	render.set_projection(m_starly[id].projection)
+end
+
+--------------------------------------------------------------------------------
+-- Engine Functions
+--------------------------------------------------------------------------------
+
+function init(self)
+	v_predicate_tile = render.predicate({ "tile" })
+end
+
+function update(self, dt)
+	activate_camera(c_id_starly)
+	render.clear(c_default_buffer_values)
+	render.set_blend_func(graphics.BLEND_FACTOR_SRC_ALPHA, graphics.BLEND_FACTOR_ONE_MINUS_SRC_ALPHA)
+	render.enable_state(graphics.STATE_BLEND)
+	render.draw(v_predicate_tile)
+	render.disable_state(graphics.STATE_BLEND)
+end

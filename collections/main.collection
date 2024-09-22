@@ -1,0 +1,47 @@
+name: "main"
+instances {
+  id: "logo"
+  prototype: "/objects/logo.go"
+}
+instances {
+  id: "controller"
+  prototype: "/objects/controller.go"
+}
+instances {
+  id: "starly_root"
+  prototype: "/objects/starly_root.go"
+  children: "starly"
+}
+instances {
+  id: "starly"
+  prototype: "/starly/objects/starly.go"
+  component_properties {
+    id: "script"
+    properties {
+      id: "viewport_width"
+      value: "1920.0"
+      type: PROPERTY_TYPE_NUMBER
+    }
+    properties {
+      id: "viewport_height"
+      value: "1080.0"
+      type: PROPERTY_TYPE_NUMBER
+    }
+    properties {
+      id: "zoom"
+      value: "8.0"
+      type: PROPERTY_TYPE_NUMBER
+    }
+    properties {
+      id: "zoom_max"
+      value: "16.0"
+      type: PROPERTY_TYPE_NUMBER
+    }
+    properties {
+      id: "zoom_min"
+      value: "4.0"
+      type: PROPERTY_TYPE_NUMBER
+    }
+  }
+}
+scale_along_z: 0
