@@ -1,0 +1,11 @@
+name: "starly"
+instances {
+  id: "container"
+  prototype: "/starly/objects/container.go"
+  children: "handle"
+}
+instances {
+  id: "handle"
+  prototype: "/starly/objects/handle.go"
+}
+scale_along_z: 0

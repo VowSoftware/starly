@@ -11,122 +11,72 @@
 local m_starly = require "starly.modules.starly"
 
 --------------------------------------------------------------------------------
--- Constants
---------------------------------------------------------------------------------
-
-local c_behavior_center = hash("center")
-local c_behavior_expand = hash("expand")
-local c_behavior_stretch = hash("stretch")
-
-local c_display_width = sys.get_config_int("display.width")
-local c_display_height = sys.get_config_int("display.height")
-
---------------------------------------------------------------------------------
 -- Properties
 --------------------------------------------------------------------------------
 
+-- These properties are extracted and saved by Starly in `init()`.
+-- To change them at runtime, use Starly's API instead of Defold's `go` API.
+
+-- Behavior of the viewport and projection relative to the window size.
+-- Behavior `center` shows a static area of the world, scales it without distortion, and centers it in the window. Bars are added to the sides of the window if necessary.
+-- Behavior `expand` shows a dynamic area of the world, but does not scale or distort it.
+-- Behavior `stretch` shows a static area of the world, and scales it with distortion.
 go.property("behavior", hash("center"))
+
+-- Bottom-left of the viewport in screen space.
 go.property("viewport_x", 0)
 go.property("viewport_y", 0)
+
+-- Size of the viewport in screen space.
+-- Default values match the window size in an empty Defold project.
 go.property("viewport_width", 960)
 go.property("viewport_height", 640)
+
+-- Clipping planes on the z axis.
+-- Typically [-1, 1] for orthographic projections and [0.1, 1000] for perspective projections.
 go.property("near", -1)
 go.property("far", 1)
+
+-- Orthographic zoom.
+-- Values greater than 1 zoom in, whereas values less than 1 zoom out.
 go.property("zoom", 1)
+
+-- Maximum and minimum zoom values.
 go.property("zoom_max", 1)
 go.property("zoom_min", 1)
 
---------------------------------------------------------------------------------
--- Local Functions
---------------------------------------------------------------------------------
+-- Determines if an orthographic boundary should be forced.
+-- Restricts the camera to showing only a certain area of the world on the x and y axes.
+go.property("boundary", false)
 
-local function clamp_properties(self)
-	if self.zoom < self.zoom_min then
-		self.zoom = self.zoom_min
-	elseif self.zoom > self.zoom_max then
-		self.zoom = self.zoom_max
-	end
-end
+-- Bottom-left of the boundary in world space.
+go.property("boundary_x", 0)
+go.property("boundary_y", 0)
 
-local function get_static_viewport(self)
-	local window_width, window_height = window.get_size()
-	local window_scale_x, window_scale_y = window_width / c_display_width, window_height / c_display_height
-	return self.viewport_x * window_scale_x, self.viewport_y * window_scale_y, self.viewport_width * window_scale_x, self.viewport_height * window_scale_y
-end
-
-local function get_dynamic_viewport(self)
-	local window_width, window_height = window.get_size()
-	local window_scale_x, window_scale_y = window_width / c_display_width, window_height / c_display_height
-	if window_scale_x < window_scale_y then
-		local margin = (window_scale_y - window_scale_x) * window_height * 0.5
-		return self.viewport_x * window_scale_x, self.viewport_y * window_scale_y + margin, self.viewport_width * window_scale_x, self.viewport_height * window_scale_y - margin * 2
-	end
-	if window_scale_y < window_scale_x then
-		local margin = (window_scale_x - window_scale_y) * window_width * 0.5
-		return self.viewport_x * window_scale_x + margin, self.viewport_y * window_scale_y, self.viewport_width * window_scale_x - margin * 2, self.viewport_height * window_scale_y
-	end
-	return self.viewport_x * window_scale_x, self.viewport_y * window_scale_y, self.viewport_width * window_scale_x, self.viewport_height * window_scale_y
-end
-
-local function get_center_projection(self)
-	local left = -c_display_width * 0.5 / self.zoom
-	local right = c_display_width * 0.5 / self.zoom
-	local bottom = -c_display_height * 0.5 / self.zoom
-	local top = c_display_height * 0.5 / self.zoom
-	return vmath.matrix4_orthographic(left, right, bottom, top, self.near, self.far)
-end
-
-local function get_expand_projection(self)
-	local window_width, window_height = window.get_size()
-	local left = -window_width * 0.5 / self.zoom
-	local right = window_width * 0.5 / self.zoom
-	local bottom = -window_height * 0.5 / self.zoom
-	local top = window_height * 0.5 / self.zoom
-	return vmath.matrix4_orthographic(left, right, bottom, top, self.near, self.far)
-end
-
-local function get_stretch_projection(self)
-	local left = -c_display_width * 0.5 / self.zoom
-	local right = c_display_width * 0.5 / self.zoom
-	local bottom = -c_display_height * 0.5 / self.zoom
-	local top = c_display_height * 0.5 / self.zoom
-	return vmath.matrix4_orthographic(left, right, bottom, top, self.near, self.far)
-end
+-- Size of the boundary in world space.
+go.property("boundary_width", 0)
+go.property("boundary_height", 0)
 
 --------------------------------------------------------------------------------
 -- Engine Functions
 --------------------------------------------------------------------------------
 
 function init(self)
+	-- Register this camera with Starly.
+	-- If the prepackaged Starly game object is used, then the user does not have to call `m_starly.create()` manually.
 	local id = go.get_id()
-	m_starly[id] =
-	{
-		viewport_x = self.viewport_x,
-		viewport_y = self.viewport_y,
-		viewport_width = self.viewport_width,
-		viewport_height = self.viewport_height,
-		view = vmath.matrix4(),
-		projection = vmath.matrix4()
-	}
+	m_starly.create(id)
 end
 
 function final(self)
+	-- Unregister this camera with Starly.
+	-- If the prepackaged Starly game object is used, then the user does not have to call `m_starly.destroy()` manually.
 	local id = go.get_id()
-	m_starly[id] = nil
+	m_starly.destroy(id)
 end
 
 function update(self, dt)
-	clamp_properties(self)
+	-- Update this camera every frame to account for runtime property changes.
 	local id = go.get_id()
-	m_starly[id].view = vmath.inv(go.get_world_transform(id))
-	if self.behavior == c_behavior_center then
-		m_starly[id].viewport_x, m_starly[id].viewport_y, m_starly[id].viewport_width, m_starly[id].viewport_height = get_dynamic_viewport(self)
-		m_starly[id].projection = get_center_projection(self)
-	elseif self.behavior == c_behavior_expand then
-		m_starly[id].viewport_x, m_starly[id].viewport_y, m_starly[id].viewport_width, m_starly[id].viewport_height = get_static_viewport(self)
-		m_starly[id].projection = get_expand_projection(self)
-	elseif self.behavior == c_behavior_stretch then
-		m_starly[id].viewport_x, m_starly[id].viewport_y, m_starly[id].viewport_width, m_starly[id].viewport_height = get_static_viewport(self)
-		m_starly[id].projection = get_stretch_projection(self)
-	end
+	m_starly.update(id)
 end

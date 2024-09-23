@@ -1,4 +1,10 @@
 --------------------------------------------------------------------------------
+-- Header
+--------------------------------------------------------------------------------
+
+-- GitHub: https://github.com/VowSoftware/starly
+
+--------------------------------------------------------------------------------
 -- Dependencies
 --------------------------------------------------------------------------------
 
@@ -8,39 +14,24 @@ local m_starly = require "starly.modules.starly"
 -- Constants
 --------------------------------------------------------------------------------
 
+-- Message ids.
 local c_msg_acquire_input_focus = hash("acquire_input_focus")
 
+-- Action ids in `on_input()`.
 local c_mouse_wheel_up = hash("mouse_wheel_up")
 local c_mouse_wheel_down = hash("mouse_wheel_down")
 local c_mouse_button_middle = hash("mouse_button_middle")
 local c_key_space = hash("key_space")
 
-local c_id_starly_root = hash("/starly_root")
-local c_id_starly = hash("/starly")
+-- Game object ids.
+local c_id_starly = hash("/starly/handle")
 
 --------------------------------------------------------------------------------
 -- Variables
 --------------------------------------------------------------------------------
 
-local v_panning = false
-
---------------------------------------------------------------------------------
--- Local Functions
---------------------------------------------------------------------------------
-
-local function zoom_camera(offset)
-	local starly_script_url = msg.url(nil, c_id_starly, "script")
-	local to = go.get(starly_script_url, "zoom") + offset
-	go.animate(starly_script_url, "zoom", go.PLAYBACK_ONCE_FORWARD, to, go.EASING_OUTQUAD, 0.1)
-end
-
-local function pan_camera(offset_x, offset_y)
-	local starly_script_url = msg.url(nil, c_id_starly, "script")
-	local zoom = go.get(starly_script_url, "zoom")
-	local position = go.get_position(c_id_starly_root)
-	local offset = vmath.vector3(offset_x, offset_y, 0) / zoom
-	go.set_position(position + offset, c_id_starly_root)
-end
+-- Determines if the middle mouse button is down, allowing for camera movement.
+local v_moving = false
 
 --------------------------------------------------------------------------------
 -- Engine Functions
@@ -52,22 +43,23 @@ end
 
 function on_input(self, action_id, action)
 	if not action_id then
-		if v_panning then
-			pan_camera(-action.screen_dx, -action.screen_dy)
+		if v_moving then
+			local offset = vmath.vector3(-action.screen_dx, -action.screen_dy, 0)
+			m_starly.move(c_id_starly, offset)
 		end
 	elseif action.pressed then
 		if action_id == c_mouse_wheel_up then
-			zoom_camera(2)
+			m_starly.zoom(c_id_starly, 4)
 		elseif action_id == c_mouse_wheel_down then
-			zoom_camera(-2)
+			m_starly.zoom(c_id_starly, -4)
 		elseif action_id == c_mouse_button_middle then
-			v_panning = true
+			v_moving = true
 		elseif action_id == c_key_space then
 			m_starly.shake(c_id_starly, 10, 0.125, 5, 0.75, 0.75)
 		end
 	elseif action.released then
 		if action_id == c_mouse_button_middle then
-			v_panning = false
+			v_moving = false
 		end
 	end
 end
