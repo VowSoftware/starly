@@ -13,12 +13,20 @@ instances {
   position {
     x: -948.0
   }
+  rotation {
+    z: 0.70710677
+    w: 0.70710677
+  }
 }
 instances {
   id: "logo_right"
   prototype: "/objects/logo.go"
   position {
     x: 948.0
+  }
+  rotation {
+    z: -0.70710677
+    w: 0.70710677
   }
 }
 instances {
@@ -34,59 +42,55 @@ instances {
   position {
     y: -528.0
   }
+  rotation {
+    z: 1.0
+    w: 6.123234E-17
+  }
 }
-collection_instances {
+instances {
   id: "starly"
-  collection: "/starly/collections/starly.collection"
-  instance_properties {
-    id: "handle"
+  prototype: "/starly/objects/starly.go"
+  component_properties {
+    id: "script"
     properties {
-      id: "script"
-      properties {
-        id: "viewport_width"
-        value: "1920.0"
-        type: PROPERTY_TYPE_NUMBER
-      }
-      properties {
-        id: "viewport_height"
-        value: "1080.0"
-        type: PROPERTY_TYPE_NUMBER
-      }
-      properties {
-        id: "zoom"
-        value: "8.0"
-        type: PROPERTY_TYPE_NUMBER
-      }
-      properties {
-        id: "zoom_max"
-        value: "16.0"
-        type: PROPERTY_TYPE_NUMBER
-      }
-      properties {
-        id: "boundary"
-        value: "true"
-        type: PROPERTY_TYPE_BOOLEAN
-      }
-      properties {
-        id: "boundary_x"
-        value: "-960.0"
-        type: PROPERTY_TYPE_NUMBER
-      }
-      properties {
-        id: "boundary_y"
-        value: "-540.0"
-        type: PROPERTY_TYPE_NUMBER
-      }
-      properties {
-        id: "boundary_width"
-        value: "1920.0"
-        type: PROPERTY_TYPE_NUMBER
-      }
-      properties {
-        id: "boundary_height"
-        value: "1080.0"
-        type: PROPERTY_TYPE_NUMBER
-      }
+      id: "viewport_width"
+      value: "1920.0"
+      type: PROPERTY_TYPE_NUMBER
+    }
+    properties {
+      id: "viewport_height"
+      value: "1080.0"
+      type: PROPERTY_TYPE_NUMBER
+    }
+    properties {
+      id: "zoom_max"
+      value: "20.0"
+      type: PROPERTY_TYPE_NUMBER
+    }
+    properties {
+      id: "boundary"
+      value: "true"
+      type: PROPERTY_TYPE_BOOLEAN
+    }
+    properties {
+      id: "boundary_x"
+      value: "-960.0"
+      type: PROPERTY_TYPE_NUMBER
+    }
+    properties {
+      id: "boundary_y"
+      value: "-540.0"
+      type: PROPERTY_TYPE_NUMBER
+    }
+    properties {
+      id: "boundary_width"
+      value: "1920.0"
+      type: PROPERTY_TYPE_NUMBER
+    }
+    properties {
+      id: "boundary_height"
+      value: "1080.0"
+      type: PROPERTY_TYPE_NUMBER
     }
   }
 }

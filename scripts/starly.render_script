@@ -14,9 +14,12 @@ local m_starly = require "starly.modules.starly"
 -- Constants
 --------------------------------------------------------------------------------
 
-local c_id_starly = hash("/starly/handle")
+local c_id_starly = hash("/starly")
 
-local c_default_buffer_values = { [graphics.BUFFER_TYPE_COLOR0_BIT] = vmath.vector4(0.114, 0.027, 0.024, 1) }
+-- Default clear color, specified in *game.project*.
+local c_clear_color = vmath.vector4(sys.get_config_number("render.clear_color_red"), sys.get_config_number("render.clear_color_green"), sys.get_config_number("render.clear_color_blue"), sys.get_config_number("render.clear_color_alpha"))
+
+local c_default_buffer_values = { [graphics.BUFFER_TYPE_COLOR0_BIT] = c_clear_color }
 
 --------------------------------------------------------------------------------
 -- Variables
