@@ -11,6 +11,12 @@
 local m_starly = require "starly.modules.starly"
 
 --------------------------------------------------------------------------------
+-- Constants
+--------------------------------------------------------------------------------
+
+local c_msg_late_update = hash("c_msg_late_update")
+
+--------------------------------------------------------------------------------
 -- Properties
 --------------------------------------------------------------------------------
 
@@ -19,7 +25,7 @@ local m_starly = require "starly.modules.starly"
 
 -- Behavior of the viewport and projection relative to the window size.
 -- Behavior `center` shows a static area of the world, scales it without distortion, and centers it in the window. Bars are added to the sides of the window if necessary.
--- Behavior `expand` shows a dynamic area of the world, but does not scale or distort it.
+-- Behavior `expand` shows a dynamic area of the world, but doesn't scale or distort it.
 -- Behavior `stretch` shows a static area of the world, and scales it with distortion.
 go.property("behavior", hash("center"))
 
@@ -63,20 +69,25 @@ go.property("boundary_height", 0)
 
 function init(self)
 	-- Register this camera with Starly.
-	-- If the prepackaged Starly game object is used, then the user does not have to call `m_starly.create()` manually.
-	local id = go.get_id()
-	m_starly.create(id)
+	-- If the prepackaged Starly game object is used, then the user doesn't have to call `m_starly.create()` manually.
+	m_starly.create(go.get_id())
 end
 
 function final(self)
 	-- Unregister this camera with Starly.
-	-- If the prepackaged Starly game object is used, then the user does not have to call `m_starly.destroy()` manually.
-	local id = go.get_id()
-	m_starly.destroy(id)
+	-- If the prepackaged Starly game object is used, then the user doesn't have to call `m_starly.destroy()` manually.
+	m_starly.destroy(go.get_id())
 end
 
 function update(self, dt)
-	-- Update this camera every frame to account for runtime property changes.
-	local id = go.get_id()
-	m_starly.update(id)
+	-- Update this camera at the end of every frame.
+	msg.post(msg.url(), c_msg_late_update)
+end
+
+function on_message(self, message_id, message, sender)
+	-- Late updates occur at the end of every frame to validate and adjust sensitive properties,
+	-- and to cache properties for the render script.
+	if message_id == c_msg_late_update then
+		m_starly.late_update(go.get_id())
+	end
 end

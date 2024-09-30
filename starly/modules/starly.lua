@@ -27,30 +27,22 @@ m_starly.c_display_height = sys.get_config_int("display.height")
 -- Local Functions
 --------------------------------------------------------------------------------
 
-local function check_clip_space(clip_x, clip_y)
-	return -1 <= clip_x and clip_x <= 1 and -1 <= clip_y and clip_y <= 1
-end
-
-local function get_boundary_offset(id)
+local function shake(id, count, duration, radius, duration_scalar, radius_scalar, shake_count)
 	local camera = m_starly[id]
-	local offset = vmath.vector3()
-	local area_x, area_y, area_width, area_height = m_starly.get_world_area(id)
-	if area_x < camera.boundary_x then
-		offset.x = camera.boundary_x - area_x
-	end
-	if camera.boundary_x + camera.boundary_width < area_x + area_width then
-		offset.x = (camera.boundary_x + camera.boundary_width) - (area_x + area_width)
-	end
-	if area_y < camera.boundary_y then
-		offset.y = camera.boundary_y - area_y
-	end
-	if camera.boundary_y + camera.boundary_height < area_y + area_height then
-		offset.y = (camera.boundary_y + camera.boundary_height) - (area_y + area_height)
-	end
-	return offset
+	local random = os.clock() * 1000
+	local radius_position = camera.shake_position + vmath.vector3(math.cos(random), math.sin(random), 0) * radius
+	go.animate(id, "position", go.PLAYBACK_ONCE_PINGPONG, radius_position, go.EASING_LINEAR, duration, 0, function()
+		duration = duration * duration_scalar
+		radius = radius * radius_scalar
+		shake_count = shake_count + 1
+		if shake_count < count then
+			shake(id, count, duration, radius, duration_scalar, radius_scalar, shake_count)
+		else
+			camera.shake_position = nil
+		end
+	end)
 end
 
--- Scales the viewport relative to the window size, but doesn't change the viewport's x and y coordinates.
 local function get_static_viewport(id)
 	local camera = m_starly[id]
 	local window_width, window_height = window.get_size()
@@ -58,7 +50,6 @@ local function get_static_viewport(id)
 	return camera.viewport_x * window_scale_x, camera.viewport_y * window_scale_y, camera.viewport_width * window_scale_x, camera.viewport_height * window_scale_y
 end
 
--- Scales the viewport relative to the window size, and changes the viewport's x and y coordinates to avoid distortion.
 local function get_dynamic_viewport(id)
 	local camera = m_starly[id]
 	local window_width, window_height = window.get_size()
@@ -72,6 +63,17 @@ local function get_dynamic_viewport(id)
 		return camera.viewport_x * window_scale_x + margin, camera.viewport_y * window_scale_y, camera.viewport_width * window_scale_x - margin * 2, camera.viewport_height * window_scale_y
 	end
 	return camera.viewport_x * window_scale_x, camera.viewport_y * window_scale_y, camera.viewport_width * window_scale_x, camera.viewport_height * window_scale_y
+end
+
+local function get_viewport(id)
+	local camera = m_starly[id]
+	if camera.behavior == c_behavior_center then
+		return get_dynamic_viewport(id)
+	elseif camera.behavior == c_behavior_expand then
+		return get_static_viewport(id)
+	elseif camera.behavior == c_behavior_stretch then
+		return get_static_viewport(id)
+	end
 end
 
 local function get_view(id)
@@ -106,20 +108,45 @@ local function get_stretch_projection(id)
 	return vmath.matrix4_orthographic(left, right, bottom, top, camera.near, camera.far)
 end
 
-local function shake(id, count, duration, radius, duration_scalar, radius_scalar, shake_count)
+local function get_projection(id)
 	local camera = m_starly[id]
-	local random = os.clock() * 1000
-	local radius_position = camera.shake_position + vmath.vector3(math.cos(random), math.sin(random), 0) * radius
-	go.animate(id, "position", go.PLAYBACK_ONCE_PINGPONG, radius_position, go.EASING_LINEAR, duration, 0, function()
-		duration = duration * duration_scalar
-		radius = radius * radius_scalar
-		shake_count = shake_count + 1
-		if shake_count < count then
-			shake(id, count, duration, radius, duration_scalar, radius_scalar, shake_count)
-		else
-			camera.shake_position = nil
-		end
-	end)
+	if camera.behavior == c_behavior_center then
+		return get_center_projection(id)
+	elseif camera.behavior == c_behavior_expand then
+		return get_expand_projection(id)
+	elseif camera.behavior == c_behavior_stretch then
+		return get_stretch_projection(id)
+	end
+end
+
+local function check_clip_space(clip_x, clip_y)
+	return -1 <= clip_x and clip_x <= 1 and -1 <= clip_y and clip_y <= 1
+end
+
+local function validate_boundary(id)
+	local camera = m_starly[id]
+	local offset = vmath.vector3()
+	local area_x, area_y, area_width, area_height = m_starly.get_world_area(id)
+	if area_x < camera.boundary_x then
+		offset.x = camera.boundary_x - area_x
+	end
+	if camera.boundary_x + camera.boundary_width < area_x + area_width then
+		offset.x = (camera.boundary_x + camera.boundary_width) - (area_x + area_width)
+	end
+	if area_y < camera.boundary_y then
+		offset.y = camera.boundary_y - area_y
+	end
+	if camera.boundary_y + camera.boundary_height < area_y + area_height then
+		offset.y = (camera.boundary_y + camera.boundary_height) - (area_y + area_height)
+	end
+	m_starly.move(id, offset)
+end
+
+local function cache_properties(id)
+	local camera = m_starly[id]
+	camera.cache_viewport_x, camera.cache_viewport_y, camera.cache_viewport_width, camera.cache_viewport_height = get_viewport(id)
+	camera.cache_view = get_view(id)
+	camera.cache_projection = get_projection(id)
 end
 
 --------------------------------------------------------------------------------
@@ -130,16 +157,12 @@ function m_starly.create(id)
 	local script_url = msg.url(nil, id, "script")
 	m_starly[id] =
 	{
-		script_url = msg.url(nil, id, "script"),
+		id = id,
 		behavior = go.get(script_url, "behavior"),
 		viewport_x = go.get(script_url, "viewport_x"),
 		viewport_y = go.get(script_url, "viewport_y"),
 		viewport_width = go.get(script_url, "viewport_width"),
 		viewport_height = go.get(script_url, "viewport_height"),
-		adjusted_viewport_x = go.get(script_url, "viewport_x"),
-		adjusted_viewport_y = go.get(script_url, "viewport_y"),
-		adjusted_viewport_width = go.get(script_url, "viewport_width"),
-		adjusted_viewport_height = go.get(script_url, "viewport_height"),
 		near = go.get(script_url, "near"),
 		far = go.get(script_url, "far"),
 		zoom = go.get(script_url, "zoom"),
@@ -150,10 +173,12 @@ function m_starly.create(id)
 		boundary_y = go.get(script_url, "boundary_y"),
 		boundary_width = go.get(script_url, "boundary_width"),
 		boundary_height = go.get(script_url, "boundary_height"),
-		view = vmath.matrix4(),
-		projection = vmath.matrix4(),
-		frustum = vmath.matrix4(),
-		inverse_frustum = vmath.matrix4(),
+		cache_viewport_x = nil,
+		cache_viewport_y = nil,
+		cache_viewport_width = nil,
+		cache_viewport_height = nil,
+		cache_view = nil,
+		cache_projection = nil,
 		shake_position = nil
 	}
 end
@@ -162,37 +187,23 @@ function m_starly.destroy(id)
 	m_starly[id] = nil
 end
 
-function m_starly.update(id)
+function m_starly.late_update(id)
 	local camera = m_starly[id]
-	camera.view = get_view(id)
-	if camera.behavior == c_behavior_center then
-		camera.adjusted_viewport_x, camera.adjusted_viewport_y, camera.adjusted_viewport_width, camera.adjusted_viewport_height = get_dynamic_viewport(id)
-		camera.projection = get_center_projection(id)
-	elseif camera.behavior == c_behavior_expand then
-		camera.adjusted_viewport_x, camera.adjusted_viewport_y, camera.adjusted_viewport_width, camera.adjusted_viewport_height = get_static_viewport(id)
-		camera.projection = get_expand_projection(id)
-	elseif camera.behavior == c_behavior_stretch then
-		camera.adjusted_viewport_x, camera.adjusted_viewport_y, camera.adjusted_viewport_width, camera.adjusted_viewport_height = get_static_viewport(id)
-		camera.projection = get_stretch_projection(id)
+	if camera.boundary then
+		validate_boundary(id)
 	end
-	camera.frustum = camera.projection * camera.view
-	camera.inverse_frustum = vmath.inv(camera.frustum)
+	cache_properties(id)
 end
 
 function m_starly.activate(id)
 	local camera = m_starly[id]
-	render.set_viewport(camera.adjusted_viewport_x, camera.adjusted_viewport_y, camera.adjusted_viewport_width, camera.adjusted_viewport_height)
-	render.set_view(camera.view)
-	render.set_projection(camera.projection)
+	render.set_viewport(camera.cache_viewport_x, camera.cache_viewport_y, camera.cache_viewport_width, camera.cache_viewport_height)
+	render.set_view(camera.cache_view)
+	render.set_projection(camera.cache_projection)
 end
 
 function m_starly.set_position(id, position)
-	local camera = m_starly[id]
 	go.set_position(position, id)
-	if camera.boundary then
-		local offset = get_boundary_offset(id)
-		go.set_position(position + offset, id)
-	end
 end
 
 function m_starly.move(id, offset)
@@ -239,31 +250,32 @@ end
 
 function m_starly.get_world_area(id)
 	local camera = m_starly[id]
-	local screen_x = camera.adjusted_viewport_x
-	local screen_y = camera.adjusted_viewport_y
-	local screen_width = camera.adjusted_viewport_x + camera.adjusted_viewport_width
-	local screen_height = camera.adjusted_viewport_x + camera.adjusted_viewport_height
-	local world_position_bottom_left = m_starly.get_world_position(id, screen_x, screen_y)
-	local world_position_top_right = m_starly.get_world_position(id, screen_width, screen_height)
-	local world_size = world_position_top_right - world_position_bottom_left
-	return world_position_bottom_left.x, world_position_bottom_left.y, world_size.x, world_size.y
+	local _, _, viewport_width, viewport_height = get_viewport(id)
+	local world_position = go.get_position(id)
+	local area_x = world_position.x - viewport_width * 0.5 / camera.zoom
+	local area_y = world_position.y - viewport_height * 0.5 / camera.zoom
+	local area_width = viewport_width / camera.zoom
+	local area_height = viewport_height / camera.zoom
+	return area_x, area_y, area_width, area_height
 end
 
-function m_starly.get_world_position(id, screen_x, screen_y, visible)
-	local camera = m_starly[id]
-	local clip_x = (screen_x - camera.adjusted_viewport_x) / camera.adjusted_viewport_width * 2 - 1
-	local clip_y = (screen_y - camera.adjusted_viewport_y) / camera.adjusted_viewport_height * 2 - 1
+function m_starly.screen_to_world(id, screen_x, screen_y, visible)
+	local viewport_x, viewport_y, viewport_width, viewport_height = get_viewport(id)
+	local inverse_frustum = vmath.inv(get_projection(id) * get_view(id))
+	local clip_x = (screen_x - viewport_x) / viewport_width * 2 - 1
+	local clip_y = (screen_y - viewport_y) / viewport_height * 2 - 1
 	if visible and not check_clip_space(clip_x, clip_y) then return end
-	local world_position = camera.inverse_frustum * vmath.vector4(clip_x, clip_y, 0, 1)
+	local world_position = inverse_frustum * vmath.vector4(clip_x, clip_y, 0, 1)
 	return vmath.vector3(world_position.x, world_position.y, 0)
 end
 
-function m_starly.get_screen_position(id, world_position, visible)
-	local camera = m_starly[id]
-	local clip_position = camera.frustum * vmath.vector4(world_position.x, world_position.y, 0, 1)
+function m_starly.world_to_screen(id, world_position, visible)
+	local _, _, viewport_width, viewport_height = get_viewport(id)
+	local frustum = get_projection(id) * get_view(id)
+	local clip_position = frustum * vmath.vector4(world_position.x, world_position.y, 0, 1)
 	if visible and not check_clip_space(clip_position.x, clip_position.y) then return end
-	local screen_x = (clip_position.x + 1) * 0.5 * camera.adjusted_viewport_width
-	local screen_y = (clip_position.y + 1) * 0.5 * camera.adjusted_viewport_height
+	local screen_x = (clip_position.x + 1) * 0.5 * viewport_width
+	local screen_y = (clip_position.y + 1) * 0.5 * viewport_height
 	return screen_x, screen_y
 end
 
