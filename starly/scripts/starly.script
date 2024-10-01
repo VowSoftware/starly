@@ -11,16 +11,6 @@
 local m_starly = require "starly.modules.starly"
 
 --------------------------------------------------------------------------------
--- Constants
---------------------------------------------------------------------------------
-
--- Engine messages.
-local c_msg_contact_point_response = hash("contact_point_response")
-
--- Custom messages.
-local c_msg_late_update = hash("late_update")
-
---------------------------------------------------------------------------------
 -- Properties
 --------------------------------------------------------------------------------
 
@@ -59,6 +49,14 @@ go.property("zoom_min", 1)
 -- Restricts the camera to showing only a certain area of the world on the x and y axes.
 go.property("boundary", false)
 
+-- Bottom-left of the boundary in world space.
+go.property("boundary_x", 0)
+go.property("boundary_y", 0)
+
+-- Size of the boundary in world space.
+go.property("boundary_width", 0)
+go.property("boundary_height", 0)
+
 --------------------------------------------------------------------------------
 -- Engine Functions
 --------------------------------------------------------------------------------
@@ -73,17 +71,4 @@ function final(self)
 	-- Unregister this camera with Starly.
 	-- If the prepackaged Starly game object is used, then the user doesn't have to call `m_starly.destroy()` manually.
 	m_starly.destroy(go.get_id())
-end
-
-function update(self, dt)
-	msg.post(msg.url(), c_msg_late_update)
-end
-
-function on_message(self, message_id, message, sender)
-	if message_id == c_msg_late_update then
-		m_starly.late_update(go.get_id())
-	elseif message_id == c_msg_contact_point_response then
-		m_starly.move(go.get_id(), message.normal * message.distance)
-		m_starly.late_update(go.get_id())
-	end
 end

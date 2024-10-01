@@ -10,10 +10,6 @@ local m_starly = {}
 -- Local Constants
 --------------------------------------------------------------------------------
 
--- Engine messages.
-local c_msg_enable = hash("enable")
-local c_msg_disable = hash("disable")
-
 -- Viewport and projection behaviors.
 local c_behavior_center = hash("center")
 local c_behavior_expand = hash("expand")
@@ -32,77 +28,71 @@ m_starly.c_display_height = sys.get_config_int("display.height")
 --------------------------------------------------------------------------------
 
 local function get_static_viewport(id)
-	local camera = m_starly[id]
 	local window_width, window_height = window.get_size()
 	local window_scale_x, window_scale_y = window_width / m_starly.c_display_width, window_height / m_starly.c_display_height
-	return camera.viewport_x * window_scale_x, camera.viewport_y * window_scale_y, camera.viewport_width * window_scale_x, camera.viewport_height * window_scale_y
+	return m_starly[id].viewport_x * window_scale_x, m_starly[id].viewport_y * window_scale_y, m_starly[id].viewport_width * window_scale_x, m_starly[id].viewport_height * window_scale_y
 end
 
 local function get_dynamic_viewport(id)
-	local camera = m_starly[id]
 	local window_width, window_height = window.get_size()
 	local window_scale_x, window_scale_y = window_width / m_starly.c_display_width, window_height / m_starly.c_display_height
 	if window_scale_x < window_scale_y then
 		local margin = (window_scale_y - window_scale_x) * window_height * 0.5
-		return camera.viewport_x * window_scale_x, camera.viewport_y * window_scale_y + margin, camera.viewport_width * window_scale_x, camera.viewport_height * window_scale_y - margin * 2
+		return m_starly[id].viewport_x * window_scale_x, m_starly[id].viewport_y * window_scale_y + margin, m_starly[id].viewport_width * window_scale_x, m_starly[id].viewport_height * window_scale_y - margin * 2
 	end
 	if window_scale_y < window_scale_x then
 		local margin = (window_scale_x - window_scale_y) * window_width * 0.5
-		return camera.viewport_x * window_scale_x + margin, camera.viewport_y * window_scale_y, camera.viewport_width * window_scale_x - margin * 2, camera.viewport_height * window_scale_y
+		return m_starly[id].viewport_x * window_scale_x + margin, m_starly[id].viewport_y * window_scale_y, m_starly[id].viewport_width * window_scale_x - margin * 2, m_starly[id].viewport_height * window_scale_y
 	end
-	return camera.viewport_x * window_scale_x, camera.viewport_y * window_scale_y, camera.viewport_width * window_scale_x, camera.viewport_height * window_scale_y
+	return m_starly[id].viewport_x * window_scale_x, m_starly[id].viewport_y * window_scale_y, m_starly[id].viewport_width * window_scale_x, m_starly[id].viewport_height * window_scale_y
 end
 
 local function get_viewport(id)
-	local camera = m_starly[id]
-	if camera.behavior == c_behavior_center then
+	if m_starly[id].behavior == c_behavior_center then
 		return get_dynamic_viewport(id)
-	elseif camera.behavior == c_behavior_expand then
+	elseif m_starly[id].behavior == c_behavior_expand then
 		return get_static_viewport(id)
-	elseif camera.behavior == c_behavior_stretch then
+	elseif m_starly[id].behavior == c_behavior_stretch then
 		return get_static_viewport(id)
 	end
 end
 
 local function get_view(id)
-	return vmath.inv(go.get_world_transform(id))
+	local camera_url = msg.url(m_starly[id].socket, id, "camera")
+	return camera.get_view(camera_url)
 end
 
 local function get_center_projection(id)
-	local camera = m_starly[id]
-	local left = -m_starly.c_display_width * 0.5 / camera.zoom
-	local right = m_starly.c_display_width * 0.5 / camera.zoom
-	local bottom = -m_starly.c_display_height * 0.5 / camera.zoom
-	local top = m_starly.c_display_height * 0.5 / camera.zoom
-	return vmath.matrix4_orthographic(left, right, bottom, top, camera.near, camera.far)
+	local left = -m_starly.c_display_width * 0.5 / m_starly[id].zoom
+	local right = m_starly.c_display_width * 0.5 / m_starly[id].zoom
+	local bottom = -m_starly.c_display_height * 0.5 / m_starly[id].zoom
+	local top = m_starly.c_display_height * 0.5 / m_starly[id].zoom
+	return vmath.matrix4_orthographic(left, right, bottom, top, m_starly[id].near, m_starly[id].far)
 end
 
 local function get_expand_projection(id)
-	local camera = m_starly[id]
 	local window_width, window_height = window.get_size()
-	local left = -window_width * 0.5 / camera.zoom
-	local right = window_width * 0.5 / camera.zoom
-	local bottom = -window_height * 0.5 / camera.zoom
-	local top = window_height * 0.5 / camera.zoom
-	return vmath.matrix4_orthographic(left, right, bottom, top, camera.near, camera.far)
+	local left = -window_width * 0.5 / m_starly[id].zoom
+	local right = window_width * 0.5 / m_starly[id].zoom
+	local bottom = -window_height * 0.5 / m_starly[id].zoom
+	local top = window_height * 0.5 / m_starly[id].zoom
+	return vmath.matrix4_orthographic(left, right, bottom, top, m_starly[id].near, m_starly[id].far)
 end
 
 local function get_stretch_projection(id)
-	local camera = m_starly[id]
-	local left = -m_starly.c_display_width * 0.5 / camera.zoom
-	local right = m_starly.c_display_width * 0.5 / camera.zoom
-	local bottom = -m_starly.c_display_height * 0.5 / camera.zoom
-	local top = m_starly.c_display_height * 0.5 / camera.zoom
-	return vmath.matrix4_orthographic(left, right, bottom, top, camera.near, camera.far)
+	local left = -m_starly.c_display_width * 0.5 / m_starly[id].zoom
+	local right = m_starly.c_display_width * 0.5 / m_starly[id].zoom
+	local bottom = -m_starly.c_display_height * 0.5 / m_starly[id].zoom
+	local top = m_starly.c_display_height * 0.5 / m_starly[id].zoom
+	return vmath.matrix4_orthographic(left, right, bottom, top, m_starly[id].near, m_starly[id].far)
 end
 
 local function get_projection(id)
-	local camera = m_starly[id]
-	if camera.behavior == c_behavior_center then
+	if m_starly[id].behavior == c_behavior_center then
 		return get_center_projection(id)
-	elseif camera.behavior == c_behavior_expand then
+	elseif m_starly[id].behavior == c_behavior_expand then
 		return get_expand_projection(id)
-	elseif camera.behavior == c_behavior_stretch then
+	elseif m_starly[id].behavior == c_behavior_stretch then
 		return get_stretch_projection(id)
 	end
 end
@@ -111,10 +101,28 @@ local function check_clip_space(clip_x, clip_y)
 	return -1 <= clip_x and clip_x <= 1 and -1 <= clip_y and clip_y <= 1
 end
 
+local function boundary(id)
+	local offset = vmath.vector3()
+	local area_x, area_y, area_width, area_height = m_starly.get_world_area(id)
+	if area_x < m_starly[id].boundary_x then
+		offset.x = m_starly[id].boundary_x - area_x
+	end
+	if m_starly[id].boundary_x + m_starly[id].boundary_width < area_x + area_width then
+		offset.x = (m_starly[id].boundary_x + m_starly[id].boundary_width) - (area_x + area_width)
+	end
+	if area_y < m_starly[id].boundary_y then
+		offset.y = m_starly[id].boundary_y - area_y
+	end
+	if m_starly[id].boundary_y + m_starly[id].boundary_height < area_y + area_height then
+		offset.y = (m_starly[id].boundary_y + m_starly[id].boundary_height) - (area_y + area_height)
+	end
+	local position = go.get_position(id) + offset
+	go.set_position(position, id)
+end
+
 local function shake(id, count, duration, radius, duration_scalar, radius_scalar, shake_count)
-	local camera = m_starly[id]
 	local random = os.clock() * 1000
-	local radius_position = camera.shake_position + vmath.vector3(math.cos(random), math.sin(random), 0) * radius
+	local radius_position = m_starly[id].shake_position + vmath.vector3(math.cos(random), math.sin(random), 0) * radius
 	go.animate(id, "position", go.PLAYBACK_ONCE_PINGPONG, radius_position, go.EASING_LINEAR, duration, 0, function()
 		duration = duration * duration_scalar
 		radius = radius * radius_scalar
@@ -122,7 +130,7 @@ local function shake(id, count, duration, radius, duration_scalar, radius_scalar
 		if shake_count < count then
 			shake(id, count, duration, radius, duration_scalar, radius_scalar, shake_count)
 		else
-			camera.shake_position = nil
+			m_starly[id].shake_position = nil
 		end
 	end)
 end
@@ -135,7 +143,7 @@ function m_starly.create(id)
 	local script_url = msg.url(nil, id, "script")
 	m_starly[id] =
 	{
-		id = id,
+		socket = script_url.socket,
 		behavior = go.get(script_url, "behavior"),
 		viewport_x = go.get(script_url, "viewport_x"),
 		viewport_y = go.get(script_url, "viewport_y"),
@@ -147,107 +155,81 @@ function m_starly.create(id)
 		zoom_max = go.get(script_url, "zoom_max"),
 		zoom_min = go.get(script_url, "zoom_min"),
 		boundary = go.get(script_url, "boundary"),
-		render_viewport_x = nil,
-		render_viewport_y = nil,
-		render_viewport_width = nil,
-		render_viewport_height = nil,
-		render_view = nil,
-		render_projection = nil,
+		boundary_x = go.get(script_url, "boundary_x"),
+		boundary_y = go.get(script_url, "boundary_y"),
+		boundary_width = go.get(script_url, "boundary_width"),
+		boundary_height = go.get(script_url, "boundary_height"),
 		shake_position = nil
 	}
-	if not m_starly[id].boundary then
-		m_starly.set_boundary(id, false)
-	end
 end
 
 function m_starly.destroy(id)
 	m_starly[id] = nil
 end
 
-function m_starly.late_update(id)
-	local camera = m_starly[id]
-	if camera.boundary then
-		local collider_url = msg.url(nil, id, "collider")
-		local shape = physics.get_shape(collider_url, "shape")
-		local _, _, area_width, area_height = m_starly.get_world_area(id)
-		if shape.dimensions.x ~= area_width or shape.dimensions.y ~= area_height then
-			shape.dimensions = vmath.vector3(area_width, area_height, shape.dimensions.z)
-			physics.set_shape(collider_url, "shape", shape)
-		end
-	end
-	camera.render_viewport_x, camera.render_viewport_y, camera.render_viewport_width, camera.render_viewport_height = get_viewport(id)
-	camera.render_view = get_view(id)
-	camera.render_projection = get_projection(id)
-end
-
 function m_starly.activate(id)
-	local camera = m_starly[id]
-	render.set_viewport(camera.render_viewport_x, camera.render_viewport_y, camera.render_viewport_width, camera.render_viewport_height)
-	render.set_view(camera.render_view)
-	render.set_projection(camera.render_projection)
+	local viewport_x, viewport_y, viewport_width, viewport_height = get_viewport(id)
+	local view = get_view(id)
+	local projection = get_projection(id)
+	render.set_viewport(viewport_x, viewport_y, viewport_width, viewport_height)
+	render.set_view(view)
+	render.set_projection(projection)
 end
 
 function m_starly.set_position(id, position)
 	go.set_position(position, id)
+	if m_starly[id].boundary then
+		boundary(id)
+	end
 end
 
 function m_starly.move(id, offset)
-	local camera = m_starly[id]
-	local position = go.get_position(id) + offset / camera.zoom
+	local position = go.get_position(id) + offset / m_starly[id].zoom
 	m_starly.set_position(id, position)
 end
 
 function m_starly.set_zoom(id, zoom)
-	local camera = m_starly[id]
-	if zoom < camera.zoom_min then
-		camera.zoom = camera.zoom_min
-	elseif zoom > camera.zoom_max then
-		camera.zoom = camera.zoom_max
+	if zoom < m_starly[id].zoom_min then
+		m_starly[id].zoom = m_starly[id].zoom_min
+	elseif zoom > m_starly[id].zoom_max then
+		m_starly[id].zoom = m_starly[id].zoom_max
 	else
-		camera.zoom = zoom
+		m_starly[id].zoom = zoom
+	end
+	if m_starly[id].boundary then
+		boundary(id)
 	end
 end
 
 function m_starly.zoom(id, offset)
-	local camera = m_starly[id]
-	local zoom = camera.zoom + offset
+	local zoom = m_starly[id].zoom + offset
 	m_starly.set_zoom(id, zoom)
 end
 
-function m_starly.set_boundary(id, flag)
-	local camera = m_starly[id]
-	camera.boundary = flag
-	local collider_url = msg.url(nil, id, "collider")
-	msg.post(collider_url, flag and c_msg_enable or c_msg_disable)
-end
-
 function m_starly.shake(id, count, duration, radius, duration_scalar, radius_scalar)
-	local camera = m_starly[id]
-	if camera.shake_position then
+	if m_starly[id].shake_position then
 		m_starly.cancel_shake(id)
 	end
-	camera.shake_position = go.get_position(id)
+	m_starly[id].shake_position = go.get_position(id)
 	duration_scalar = duration_scalar and duration_scalar or 1
 	radius_scalar = radius_scalar and radius_scalar or 1
 	shake(id, count, duration, radius, duration_scalar, radius_scalar, 0)
 end
 
 function m_starly.cancel_shake(id)
-	local camera = m_starly[id]
-	if not camera.shake_position then return end
+	if not m_starly[id].shake_position then return end
 	go.cancel_animations(id, "position")
-	go.set_position(camera.shake_position, id)
-	camera.shake_position = nil
+	go.set_position(m_starly[id].shake_position, id)
+	m_starly[id].shake_position = nil
 end
 
 function m_starly.get_world_area(id)
-	local camera = m_starly[id]
 	local _, _, viewport_width, viewport_height = get_viewport(id)
 	local world_position = go.get_position(id)
-	local area_x = world_position.x - viewport_width * 0.5 / camera.zoom
-	local area_y = world_position.y - viewport_height * 0.5 / camera.zoom
-	local area_width = viewport_width / camera.zoom
-	local area_height = viewport_height / camera.zoom
+	local area_x = world_position.x - viewport_width * 0.5 / m_starly[id].zoom
+	local area_y = world_position.y - viewport_height * 0.5 / m_starly[id].zoom
+	local area_width = viewport_width / m_starly[id].zoom
+	local area_height = viewport_height / m_starly[id].zoom
 	return area_x, area_y, area_width, area_height
 end
 

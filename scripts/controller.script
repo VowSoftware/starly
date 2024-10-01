@@ -25,7 +25,6 @@ local c_key_space = hash("key_space")
 
 -- Game object ids.
 local c_id_starly = hash("/starly")
-local c_id_logo_center = hash("/logo_center")
 
 --------------------------------------------------------------------------------
 -- Variables
@@ -39,7 +38,6 @@ local v_moving = false
 --------------------------------------------------------------------------------
 
 function init(self)
-	go.animate(c_id_logo_center, "euler.z", go.PLAYBACK_LOOP_FORWARD, 360, go.EASING_LINEAR, 3)
 	msg.post(msg.url(), c_msg_acquire_input_focus)
 end
 
@@ -57,7 +55,7 @@ function on_input(self, action_id, action)
 		elseif action_id == c_mouse_button_middle then
 			v_moving = true
 		elseif action_id == c_key_space then
-			m_starly.shake(c_id_starly, 10, 0.125, 5, 0.75, 0.75)
+			m_starly.shake(c_id_starly, 10, 0.125, 10, 0.75, 0.75)
 		end
 	elseif action.released then
 		if action_id == c_mouse_button_middle then

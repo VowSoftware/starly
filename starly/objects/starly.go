@@ -3,6 +3,6 @@ components {
   component: "/starly/scripts/starly.script"
 }
 components {
-  id: "collider"
-  component: "/starly/colliders/starly.collisionobject"
+  id: "camera"
+  component: "/starly/cameras/starly.camera"
 }
