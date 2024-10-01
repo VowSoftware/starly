@@ -1,0 +1,21 @@
+type: COLLISION_OBJECT_TYPE_KINEMATIC
+mass: 0.0
+friction: 0.1
+restitution: 0.5
+group: "starly_area"
+mask: "starly_boundary"
+embedded_collision_shape {
+  shapes {
+    shape_type: TYPE_BOX
+    position {
+    }
+    rotation {
+    }
+    index: 0
+    count: 3
+    id: "shape"
+  }
+  data: 480.0
+  data: 320.0
+  data: 0.5
+}

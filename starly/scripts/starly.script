@@ -14,7 +14,11 @@ local m_starly = require "starly.modules.starly"
 -- Constants
 --------------------------------------------------------------------------------
 
-local c_msg_late_update = hash("c_msg_late_update")
+-- Engine messages.
+local c_msg_contact_point_response = hash("contact_point_response")
+
+-- Custom messages.
+local c_msg_late_update = hash("late_update")
 
 --------------------------------------------------------------------------------
 -- Properties
@@ -51,17 +55,9 @@ go.property("zoom", 1)
 go.property("zoom_max", 1)
 go.property("zoom_min", 1)
 
--- Determines if an orthographic boundary should be forced.
+-- Determines if an orthographic boundary should be enforced.
 -- Restricts the camera to showing only a certain area of the world on the x and y axes.
 go.property("boundary", false)
-
--- Bottom-left of the boundary in world space.
-go.property("boundary_x", 0)
-go.property("boundary_y", 0)
-
--- Size of the boundary in world space.
-go.property("boundary_width", 0)
-go.property("boundary_height", 0)
 
 --------------------------------------------------------------------------------
 -- Engine Functions
@@ -80,14 +76,14 @@ function final(self)
 end
 
 function update(self, dt)
-	-- Update this camera at the end of every frame.
 	msg.post(msg.url(), c_msg_late_update)
 end
 
 function on_message(self, message_id, message, sender)
-	-- Late updates occur at the end of every frame to validate and adjust sensitive properties,
-	-- and to cache properties for the render script.
 	if message_id == c_msg_late_update then
+		m_starly.late_update(go.get_id())
+	elseif message_id == c_msg_contact_point_response then
+		m_starly.move(go.get_id(), message.normal * message.distance)
 		m_starly.late_update(go.get_id())
 	end
 end

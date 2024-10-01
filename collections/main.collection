@@ -72,26 +72,34 @@ instances {
       value: "true"
       type: PROPERTY_TYPE_BOOLEAN
     }
-    properties {
-      id: "boundary_x"
-      value: "-960.0"
-      type: PROPERTY_TYPE_NUMBER
-    }
-    properties {
-      id: "boundary_y"
-      value: "-540.0"
-      type: PROPERTY_TYPE_NUMBER
-    }
-    properties {
-      id: "boundary_width"
-      value: "1920.0"
-      type: PROPERTY_TYPE_NUMBER
-    }
-    properties {
-      id: "boundary_height"
-      value: "1080.0"
-      type: PROPERTY_TYPE_NUMBER
-    }
+  }
+}
+instances {
+  id: "boundary_up"
+  prototype: "/objects/boundary_y.go"
+  position {
+    y: 540.5
+  }
+}
+instances {
+  id: "boundary_left"
+  prototype: "/objects/boundary_x.go"
+  position {
+    x: -960.5
+  }
+}
+instances {
+  id: "boundary_right"
+  prototype: "/objects/boundary_x.go"
+  position {
+    x: 960.5
+  }
+}
+instances {
+  id: "boundary_down"
+  prototype: "/objects/boundary_y.go"
+  position {
+    y: -540.5
   }
 }
 scale_along_z: 0

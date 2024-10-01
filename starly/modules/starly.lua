@@ -10,6 +10,10 @@ local m_starly = {}
 -- Local Constants
 --------------------------------------------------------------------------------
 
+-- Engine messages.
+local c_msg_enable = hash("enable")
+local c_msg_disable = hash("disable")
+
 -- Viewport and projection behaviors.
 local c_behavior_center = hash("center")
 local c_behavior_expand = hash("expand")
@@ -26,22 +30,6 @@ m_starly.c_display_height = sys.get_config_int("display.height")
 --------------------------------------------------------------------------------
 -- Local Functions
 --------------------------------------------------------------------------------
-
-local function shake(id, count, duration, radius, duration_scalar, radius_scalar, shake_count)
-	local camera = m_starly[id]
-	local random = os.clock() * 1000
-	local radius_position = camera.shake_position + vmath.vector3(math.cos(random), math.sin(random), 0) * radius
-	go.animate(id, "position", go.PLAYBACK_ONCE_PINGPONG, radius_position, go.EASING_LINEAR, duration, 0, function()
-		duration = duration * duration_scalar
-		radius = radius * radius_scalar
-		shake_count = shake_count + 1
-		if shake_count < count then
-			shake(id, count, duration, radius, duration_scalar, radius_scalar, shake_count)
-		else
-			camera.shake_position = nil
-		end
-	end)
-end
 
 local function get_static_viewport(id)
 	local camera = m_starly[id]
@@ -123,30 +111,20 @@ local function check_clip_space(clip_x, clip_y)
 	return -1 <= clip_x and clip_x <= 1 and -1 <= clip_y and clip_y <= 1
 end
 
-local function validate_boundary(id)
+local function shake(id, count, duration, radius, duration_scalar, radius_scalar, shake_count)
 	local camera = m_starly[id]
-	local offset = vmath.vector3()
-	local area_x, area_y, area_width, area_height = m_starly.get_world_area(id)
-	if area_x < camera.boundary_x then
-		offset.x = camera.boundary_x - area_x
-	end
-	if camera.boundary_x + camera.boundary_width < area_x + area_width then
-		offset.x = (camera.boundary_x + camera.boundary_width) - (area_x + area_width)
-	end
-	if area_y < camera.boundary_y then
-		offset.y = camera.boundary_y - area_y
-	end
-	if camera.boundary_y + camera.boundary_height < area_y + area_height then
-		offset.y = (camera.boundary_y + camera.boundary_height) - (area_y + area_height)
-	end
-	m_starly.move(id, offset)
-end
-
-local function cache_properties(id)
-	local camera = m_starly[id]
-	camera.cache_viewport_x, camera.cache_viewport_y, camera.cache_viewport_width, camera.cache_viewport_height = get_viewport(id)
-	camera.cache_view = get_view(id)
-	camera.cache_projection = get_projection(id)
+	local random = os.clock() * 1000
+	local radius_position = camera.shake_position + vmath.vector3(math.cos(random), math.sin(random), 0) * radius
+	go.animate(id, "position", go.PLAYBACK_ONCE_PINGPONG, radius_position, go.EASING_LINEAR, duration, 0, function()
+		duration = duration * duration_scalar
+		radius = radius * radius_scalar
+		shake_count = shake_count + 1
+		if shake_count < count then
+			shake(id, count, duration, radius, duration_scalar, radius_scalar, shake_count)
+		else
+			camera.shake_position = nil
+		end
+	end)
 end
 
 --------------------------------------------------------------------------------
@@ -169,18 +147,17 @@ function m_starly.create(id)
 		zoom_max = go.get(script_url, "zoom_max"),
 		zoom_min = go.get(script_url, "zoom_min"),
 		boundary = go.get(script_url, "boundary"),
-		boundary_x = go.get(script_url, "boundary_x"),
-		boundary_y = go.get(script_url, "boundary_y"),
-		boundary_width = go.get(script_url, "boundary_width"),
-		boundary_height = go.get(script_url, "boundary_height"),
-		cache_viewport_x = nil,
-		cache_viewport_y = nil,
-		cache_viewport_width = nil,
-		cache_viewport_height = nil,
-		cache_view = nil,
-		cache_projection = nil,
+		render_viewport_x = nil,
+		render_viewport_y = nil,
+		render_viewport_width = nil,
+		render_viewport_height = nil,
+		render_view = nil,
+		render_projection = nil,
 		shake_position = nil
 	}
+	if not m_starly[id].boundary then
+		m_starly.set_boundary(id, false)
+	end
 end
 
 function m_starly.destroy(id)
@@ -190,16 +167,24 @@ end
 function m_starly.late_update(id)
 	local camera = m_starly[id]
 	if camera.boundary then
-		validate_boundary(id)
+		local collider_url = msg.url(nil, id, "collider")
+		local shape = physics.get_shape(collider_url, "shape")
+		local _, _, area_width, area_height = m_starly.get_world_area(id)
+		if shape.dimensions.x ~= area_width or shape.dimensions.y ~= area_height then
+			shape.dimensions = vmath.vector3(area_width, area_height, shape.dimensions.z)
+			physics.set_shape(collider_url, "shape", shape)
+		end
 	end
-	cache_properties(id)
+	camera.render_viewport_x, camera.render_viewport_y, camera.render_viewport_width, camera.render_viewport_height = get_viewport(id)
+	camera.render_view = get_view(id)
+	camera.render_projection = get_projection(id)
 end
 
 function m_starly.activate(id)
 	local camera = m_starly[id]
-	render.set_viewport(camera.cache_viewport_x, camera.cache_viewport_y, camera.cache_viewport_width, camera.cache_viewport_height)
-	render.set_view(camera.cache_view)
-	render.set_projection(camera.cache_projection)
+	render.set_viewport(camera.render_viewport_x, camera.render_viewport_y, camera.render_viewport_width, camera.render_viewport_height)
+	render.set_view(camera.render_view)
+	render.set_projection(camera.render_projection)
 end
 
 function m_starly.set_position(id, position)
@@ -227,6 +212,13 @@ function m_starly.zoom(id, offset)
 	local camera = m_starly[id]
 	local zoom = camera.zoom + offset
 	m_starly.set_zoom(id, zoom)
+end
+
+function m_starly.set_boundary(id, flag)
+	local camera = m_starly[id]
+	camera.boundary = flag
+	local collider_url = msg.url(nil, id, "collider")
+	msg.post(collider_url, flag and c_msg_enable or c_msg_disable)
 end
 
 function m_starly.shake(id, count, duration, radius, duration_scalar, radius_scalar)
