@@ -8,7 +8,7 @@
 -- Dependencies
 --------------------------------------------------------------------------------
 
-local m_starly = require "starly.modules.starly"
+local m_starly = require "starly.starly"
 
 --------------------------------------------------------------------------------
 -- Constants

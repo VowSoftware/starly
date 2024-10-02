@@ -49,7 +49,7 @@ instances {
 }
 instances {
   id: "starly"
-  prototype: "/starly/objects/starly.go"
+  prototype: "/starly/starly.go"
   component_properties {
     id: "script"
     properties {

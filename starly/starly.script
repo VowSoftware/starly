@@ -8,18 +8,15 @@
 -- Dependencies
 --------------------------------------------------------------------------------
 
-local m_starly = require "starly.modules.starly"
+local m_starly = require "starly.starly"
 
 --------------------------------------------------------------------------------
 -- Properties
 --------------------------------------------------------------------------------
 
--- These properties are extracted and saved by Starly in `init()`.
--- To change them at runtime, use Starly's API instead of Defold's `go` API.
-
 -- Behavior of the viewport and projection relative to the window size.
--- Behavior `center` shows a static area of the world, scales it without distortion, and centers it in the window. Bars are added to the sides of the window if necessary.
--- Behavior `expand` shows a dynamic area of the world, but doesn't scale or distort it.
+-- Behavior `center` shows a static area of the world, scales it without distortion, and centers it in the window. Borders are added to the window if necessary.
+-- Behavior `expand` shows a dynamic area of the world, and doesn't scale or distort it.
 -- Behavior `stretch` shows a static area of the world, and scales it with distortion.
 go.property("behavior", hash("center"))
 

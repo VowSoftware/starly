@@ -1,0 +1,6 @@
+name: "camera"
+instances {
+  id: "starly"
+  prototype: "/starly/starly.go"
+}
+scale_along_z: 0
