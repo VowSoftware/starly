@@ -7,19 +7,15 @@
 local m_starly = {}
 
 --------------------------------------------------------------------------------
--- Local Constants
---------------------------------------------------------------------------------
-
-local c_behavior_center = hash("center")
-local c_behavior_expand = hash("expand")
-local c_behavior_stretch = hash("stretch")
-
---------------------------------------------------------------------------------
 -- Module Constants
 --------------------------------------------------------------------------------
 
 m_starly.c_display_width = sys.get_config_int("display.width")
 m_starly.c_display_height = sys.get_config_int("display.height")
+
+m_starly.c_behavior_center = hash("center")
+m_starly.c_behavior_expand = hash("expand")
+m_starly.c_behavior_stretch = hash("stretch")
 
 --------------------------------------------------------------------------------
 -- Local Functions
@@ -46,11 +42,11 @@ local function get_dynamic_viewport(id)
 end
 
 local function get_viewport(id)
-	if m_starly[id].behavior == c_behavior_center then
+	if m_starly[id].behavior == m_starly.c_behavior_center then
 		return get_dynamic_viewport(id)
-	elseif m_starly[id].behavior == c_behavior_expand then
+	elseif m_starly[id].behavior == m_starly.c_behavior_expand then
 		return get_static_viewport(id)
-	elseif m_starly[id].behavior == c_behavior_stretch then
+	elseif m_starly[id].behavior == m_starly.c_behavior_stretch then
 		return get_static_viewport(id)
 	end
 end
@@ -86,11 +82,11 @@ local function get_stretch_projection(id)
 end
 
 local function get_projection(id)
-	if m_starly[id].behavior == c_behavior_center then
+	if m_starly[id].behavior == m_starly.c_behavior_center then
 		return get_center_projection(id)
-	elseif m_starly[id].behavior == c_behavior_expand then
+	elseif m_starly[id].behavior == m_starly.c_behavior_expand then
 		return get_expand_projection(id)
-	elseif m_starly[id].behavior == c_behavior_stretch then
+	elseif m_starly[id].behavior == m_starly.c_behavior_stretch then
 		return get_stretch_projection(id)
 	end
 end
@@ -148,11 +144,6 @@ function m_starly.activate(id)
 	render.set_projection(projection)
 end
 
-function m_starly.move(id, offset)
-	local position = go.get_position(id) + offset / m_starly[id].zoom
-	go.set_position(position, id)
-end
-
 function m_starly.shake(id, count, duration, radius, duration_scalar, radius_scalar)
 	if m_starly[id].shake_position then
 		m_starly.cancel_shake(id)
@@ -172,6 +163,34 @@ end
 
 function m_starly.is_shaking(id)
 	return m_starly[id].shake_position and true or false
+end
+
+function m_starly.get_tight_world_area(id, positions)
+	local min_x = positions[1].x
+	local min_y = positions[1].y
+	local max_x = positions[1].x
+	local max_y = positions[1].y
+	for i = 2, #positions do
+		if positions[i].x < min_x then
+			min_x = positions[i].x
+		elseif positions[i].x > max_x then
+			max_x = positions[i].x
+		end
+		if positions[i].y < min_y then
+			min_y = positions[i].y
+		elseif positions[i].y > max_y then
+			max_y = positions[i].y
+		end
+	end
+	local _, _, area_width, area_height = m_starly.get_world_area(id)
+	local min_width = max_x - min_x
+	local min_height = max_y - min_y
+	local zoom_x = area_width / min_width
+	local zoom_y = area_height / min_height
+	local tight_position = vmath.vector3(min_x + (max_x - min_x) * 0.5, min_y + (max_y - min_y) * 0.5, 0)
+	local tight_zoom = m_starly[id].zoom * math.max(zoom_x, zoom_y)
+	local tight_area_x, tight_area_y, tight_area_width, tight_area_height = min_x, min_y, min_width, min_height
+	return tight_position, tight_zoom, tight_area_x, tight_area_y, tight_area_width, tight_area_height
 end
 
 function m_starly.get_world_area(id)

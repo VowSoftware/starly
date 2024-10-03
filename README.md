@@ -131,16 +131,21 @@ For example, the default render script is 236 lines long. After stripping all of
 
 Module and camera variables can be accessed directly. Note that the prefix `c_` refers to a constant.
 
-* `starly.c_display_width`: Default width of the window, specified in the *game.project* file.
-* `starly.c_display_height`: Default height of the window, specified in the *game.project* file.
-* `starly[id].behavior`: See [configuration](#configuration) for details.
-* `starly[id].viewport_x`: See [configuration](#configuration) for details.
-* `starly[id].viewport_y`: See [configuration](#configuration) for details.
-* `starly[id].viewport_width`: See [configuration](#configuration) for details.
-* `starly[id].viewport_height`: See [configuration](#configuration) for details.
-* `starly[id].near`: See [configuration](#configuration) for details.
-* `starly[id].far`: See [configuration](#configuration) for details.
-* `starly[id].zoom`: See [configuration](#configuration) for details.
+* `starly.c_display_width`: `number` Default width of the window, specified in the *game.project* file.
+* `starly.c_display_height`: `number` Default height of the window, specified in the *game.project* file.
+
+* `starly.c_behavior_center`: `hash` Center behavior value.
+* `starly.c_behavior_expand`: `hash` Expand behavior value.
+* `starly.c_behavior_stretch`: `hash` Stretch behavior value.
+
+* `starly[id].behavior`: `hash` See [configuration](#configuration) for details.
+* `starly[id].viewport_x`: `number` See [configuration](#configuration) for details.
+* `starly[id].viewport_y`: `number` See [configuration](#configuration) for details.
+* `starly[id].viewport_width`: `number` See [configuration](#configuration) for details.
+* `starly[id].viewport_height`: `number` See [configuration](#configuration) for details.
+* `starly[id].near`: `number` See [configuration](#configuration) for details.
+* `starly[id].far`: `number` See [configuration](#configuration) for details.
+* `starly[id].zoom`: `number` See [configuration](#configuration) for details.
 
 ## Function API
 
@@ -148,52 +153,132 @@ Module and camera variables can be accessed directly. Note that the prefix `c_` 
 
 Creates a camera. This function is called automatically in the game object's script component.
 
+**Parameters**
+
+* `id`: `hash` Camera game object id.
+
+---
+
 ### `m_starly.destroy(id)`
 
 Destroys a camera. This function is called automatically in the game object's script component.
+
+**Parameters**
+
+* `id`: `hash` Camera game object id.
+
+---
 
 ### `m_starly.activate(id)`
 
 Activates a camera. This function should be called in the user's render script before any making any draw calls.
 
-### `m_starly.move(id, offset)`
+**Parameters**
 
-Moves a camera by some distance. Accounts for the camera's `zoom` value.
+* `id`: `hash` Camera game object id.
+
+---
 
 ### `m_starly.shake(id, count, duration, radius, [duration_scalar = 1], [radius_scalar = 1])`
 
 Shakes a camera.
 
+**Parameters**
+
+* `id`: `hash` Camera game object id.
 * `count`: `number` Amount of pingpong movements.
 * `duration`: `number` Duration of each pingpong.
 * `radius`: `number` Distance of each pingpong.
 * `[duration_scalar]`: `number` After each pingpong, the `duration` is scaled by this value.
 * `[radius_scalar]`: `number` After each pingpong, the `radius` is scaled by this value.
 
+---
+
 ### `m_starly.cancel_shake(id)`
 
 Cancels an ongoing camera shake.
+
+**Parameters**
+
+* `id`: `hash` Camera game object id.
+
+---
 
 ### `m_starly.is_shaking(id)`
 
 Checks if a camera is shaking.
 
-Returns a `boolean`.
+**Parameters**
+
+* `id`: `hash` Camera game object id.
+
+**Returns**
+
+* `boolean`
+
+---
 
 ### `m_starly.get_world_area(id)`
 
 Gets the world area of a camera, which is defined as the rectangular area of the world that the camera can see, in world coordinates.
 
-Returns `x`, `y`, `width`, and `height`, where `x` and `y` are the bottom-left of the rectangle.
+**Parameters**
+
+* `id`: `hash` Camera game object id.
+
+**Returns**
+
+* `x`: `number` Left side of the rectangle.
+* `y`: `number` Bottom of the rectangle.
+* `width`: `number` Width of the rectangle.
+* `height`: `number` Height of the rectangle.
+
+---
+
+### `m_starly.get_tight_world_area(id, positions)`
+
+Gets the center position, minimum zoom, and minimum world area of a camera that can see all `positions`.
+
+**Parameters**
+
+* `id`: `hash` Camera game object id.
+* `positions`: `table` Array of `vector3` positions, in world coordinates.
+
+**Returns**
+
+* `position`: `vector3` Center position.
+* `zoom`: `number` Minimum zoom.
+* `x`: `number` Left side of the rectangle.
+* `y`: `number` Bottom of the rectangle.
+* `width`: `number` Width of the rectangle.
+* `height`: `number` Height of the rectangle.
+
+---
 
 ### `m_starly.screen_to_world(id, screen_x, screen_y, [visible = false])`
 
 Converts screen coordinates to world coordinates.
 
+**Parameters**
+
+* `id`: `hash` Camera game object id.
 * `visible`: `boolean` Determines if the cursor must be visible to the camera. If `true`, then this function returns `nil` when the cursor is outside the camera's viewport.
+
+**Returns**
+
+* `vector3`
+
+---
 
 ### `m_starly.world_to_screen(id, world_position, [visible = false])`
 
 Converts world coordinates to screen coordinates.
 
+**Parameters**
+
+* `id`: `hash` Camera game object id.
 * `visible`: `boolean` Determines if the cursor must be visible to the camera. If `true`, then this function returns `nil` when the cursor is outside the camera's viewport.
+
+**Returns**
+
+* `vector3`

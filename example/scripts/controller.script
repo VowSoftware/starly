@@ -24,6 +24,9 @@ local c_mouse_wheel_down = hash("mouse_wheel_down")
 local c_mouse_button_middle = hash("mouse_button_middle")
 local c_key_space = hash("key_space")
 
+-- Logo game object id.
+local c_id_logo = hash("/logo")
+
 -- Starly game object id.
 -- This is passed to the Starly API to control a specific camera.
 local c_id_starly = hash("/starly")
@@ -38,14 +41,18 @@ local c_zoom_min = 1
 
 function init(self)
 	msg.post(msg.url(), c_msg_acquire_input_focus)
+	-- Animate the logo for fun.
+	go.animate(c_id_logo, "euler.z", go.PLAYBACK_LOOP_PINGPONG, 360, go.EASING_INOUTCUBIC, 5)
 end
 
 function on_input(self, action_id, action)
 	-- If the mouse moves and the middle mouse button is down, then move the camera accordingly.
 	if not action_id then
 		if self.v_moving then
-			local offset = vmath.vector3(-action.screen_dx, -action.screen_dy, 0)
-			m_starly.move(c_id_starly, offset)
+			local position = go.get_position(c_id_starly)
+			local distance = vmath.vector3(-action.screen_dx, -action.screen_dy, 0) / m_starly[c_id_starly].zoom
+			pprint(position, distance)
+			go.set_position(position + distance, c_id_starly)
 		end
 	elseif action.pressed then
 		if action_id == c_mouse_wheel_up then
