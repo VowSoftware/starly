@@ -22,13 +22,6 @@ go.property("viewport_height", 640)
 go.property("near", -1)
 go.property("far", 1)
 go.property("zoom", 1)
-go.property("zoom_max", 1)
-go.property("zoom_min", 1)
-go.property("boundary", false)
-go.property("boundary_x", 0)
-go.property("boundary_y", 0)
-go.property("boundary_width", 0)
-go.property("boundary_height", 0)
 
 --------------------------------------------------------------------------------
 -- Engine Functions

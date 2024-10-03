@@ -28,6 +28,10 @@ local c_key_space = hash("key_space")
 -- This is passed to the Starly API to control a specific camera.
 local c_id_starly = hash("/starly")
 
+-- Max and min zoom values.
+local c_zoom_max = 40
+local c_zoom_min = 1
+
 --------------------------------------------------------------------------------
 -- Engine Functions
 --------------------------------------------------------------------------------
@@ -38,24 +42,29 @@ end
 
 function on_input(self, action_id, action)
 	-- If the mouse moves and the middle mouse button is down, then move the camera accordingly.
-	-- Movement will be restricted by the camera's `boundary`, if enabled.
 	if not action_id then
 		if self.v_moving then
 			local offset = vmath.vector3(-action.screen_dx, -action.screen_dy, 0)
 			m_starly.move(c_id_starly, offset)
 		end
 	elseif action.pressed then
-		-- If the mouse wheel is scrolled, the zoom in or out by a factor of 4.
-		-- Zoom will be restricted by the camera's `zoom_max` and `zoom_min`.
 		if action_id == c_mouse_wheel_up then
-			m_starly.zoom(c_id_starly, 4)
+			-- If the mouse wheel is scrolled up, the zoom in.
+			m_starly[c_id_starly].zoom = m_starly[c_id_starly].zoom * 2
+			if m_starly[c_id_starly].zoom > c_zoom_max then
+				m_starly[c_id_starly].zoom = c_zoom_max
+			end
 		elseif action_id == c_mouse_wheel_down then
-			m_starly.zoom(c_id_starly, -4)
-		-- If the middle mouse button is down, then enable camera movement.
+			-- If the mouse wheel is scrolled up, the zoom out.
+			m_starly[c_id_starly].zoom = m_starly[c_id_starly].zoom * 0.5
+			if m_starly[c_id_starly].zoom < c_zoom_min then
+				m_starly[c_id_starly].zoom = c_zoom_min
+			end
 		elseif action_id == c_mouse_button_middle then
+			-- If the middle mouse button is down, then enable camera movement.
 			self.v_moving = true
-		-- If the space bar is pressed, then shake the camera.
 		elseif action_id == c_key_space then
+			-- If the space bar is pressed, then shake the camera.
 			m_starly.shake(c_id_starly, 10, 0.125, 10, 0.75, 0.75)
 		end
 	-- If the middle mouse button is released, then disable camera movement.

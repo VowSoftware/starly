@@ -99,25 +99,6 @@ local function check_clip_space(clip_x, clip_y)
 	return -1 <= clip_x and clip_x <= 1 and -1 <= clip_y and clip_y <= 1
 end
 
-local function boundary(id)
-	local offset = vmath.vector3()
-	local area_x, area_y, area_width, area_height = m_starly.get_world_area(id)
-	if area_x < m_starly[id].boundary_x then
-		offset.x = m_starly[id].boundary_x - area_x
-	end
-	if m_starly[id].boundary_x + m_starly[id].boundary_width < area_x + area_width then
-		offset.x = (m_starly[id].boundary_x + m_starly[id].boundary_width) - (area_x + area_width)
-	end
-	if area_y < m_starly[id].boundary_y then
-		offset.y = m_starly[id].boundary_y - area_y
-	end
-	if m_starly[id].boundary_y + m_starly[id].boundary_height < area_y + area_height then
-		offset.y = (m_starly[id].boundary_y + m_starly[id].boundary_height) - (area_y + area_height)
-	end
-	local position = go.get_position(id) + offset
-	go.set_position(position, id)
-end
-
 local function shake(id, count, duration, radius, duration_scalar, radius_scalar, shake_count)
 	local random = os.clock() * 1000
 	local radius_position = m_starly[id].shake_position + vmath.vector3(math.cos(random), math.sin(random), 0) * radius
@@ -150,13 +131,6 @@ function m_starly.create(id)
 		near = go.get(script_url, "near"),
 		far = go.get(script_url, "far"),
 		zoom = go.get(script_url, "zoom"),
-		zoom_max = go.get(script_url, "zoom_max"),
-		zoom_min = go.get(script_url, "zoom_min"),
-		boundary = go.get(script_url, "boundary"),
-		boundary_x = go.get(script_url, "boundary_x"),
-		boundary_y = go.get(script_url, "boundary_y"),
-		boundary_width = go.get(script_url, "boundary_width"),
-		boundary_height = go.get(script_url, "boundary_height"),
 		shake_position = nil
 	}
 end
@@ -174,34 +148,9 @@ function m_starly.activate(id)
 	render.set_projection(projection)
 end
 
-function m_starly.set_position(id, position)
-	go.set_position(position, id)
-	if m_starly[id].boundary then
-		boundary(id)
-	end
-end
-
 function m_starly.move(id, offset)
 	local position = go.get_position(id) + offset / m_starly[id].zoom
-	m_starly.set_position(id, position)
-end
-
-function m_starly.set_zoom(id, zoom)
-	if zoom < m_starly[id].zoom_min then
-		m_starly[id].zoom = m_starly[id].zoom_min
-	elseif zoom > m_starly[id].zoom_max then
-		m_starly[id].zoom = m_starly[id].zoom_max
-	else
-		m_starly[id].zoom = zoom
-	end
-	if m_starly[id].boundary then
-		boundary(id)
-	end
-end
-
-function m_starly.zoom(id, offset)
-	local zoom = m_starly[id].zoom + offset
-	m_starly.set_zoom(id, zoom)
+	go.set_position(position, id)
 end
 
 function m_starly.shake(id, count, duration, radius, duration_scalar, radius_scalar)
@@ -219,6 +168,10 @@ function m_starly.cancel_shake(id)
 	go.cancel_animations(id, "position")
 	go.set_position(m_starly[id].shake_position, id)
 	m_starly[id].shake_position = nil
+end
+
+function m_starly.is_shaking(id)
+	return m_starly[id].shake_position and true or false
 end
 
 function m_starly.get_world_area(id)
