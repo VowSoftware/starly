@@ -32,10 +32,10 @@ Each Starly game object is an independent camera. It contains a script component
   * Behavior `center` shows a static area of the world, scales it without distortion, and centers it in the window. Borders are added to the window if necessary.
   * Behavior `expand` shows a dynamic area of the world, and doesn't scale or distort it.
   * Behavior `stretch` shows a static area of the world, and scales it with distortion.
-* **Viewport X / Viewport Y:** Bottom-left of the viewport in screen space. For example, values (0, 0) on a 1920 x 1080 window start the viewport in the bottom-left corner of the window, whereas values of (960, 540) start the viewport in the center of the window.
-* **Viewport Width / Viewport Height:** Size of the viewport in screen space. For example, values (1920, 1080) on a 1920 x 1080 window fill the entire window, whereas values of (960, 540) fill one-fourth of the window.
+* **Viewport X / Viewport Y:** Bottom-left of the viewport in screen space. For example, values (0, 0) on a 1920 x 1080 window start the viewport at the bottom-left corner of the window, whereas values (960, 540) start the viewport at the center of the window.
+* **Viewport Width / Viewport Height:** Size of the viewport in screen space. For example, values (1920, 1080) on a 1920 x 1080 window fill the entire window, whereas values (960, 540) fill one-fourth of the window.
 * **Near / Far:** Clipping planes on the z axis. Orthographic projections usually use the standard values (-1, 1).
-* **Zoom:** Orthographic scaling factor. For example, a value of 0.5 zooms out such that more of the world can be seen and objects appear smaller, whereas a value of 2.0 zooms in such that less of the world can be seen and objects appear larger.
+* **Zoom:** Orthographic scaling factor. For example, a value of 0.5 zooms out such that more of the world can be seen and objects appear 0.5x smaller, whereas a value of 2 zooms in such that less of the world can be seen and objects appear 2x larger.
 
 ## Behaviors
 
@@ -47,7 +47,7 @@ To demonstrate the affect of each behavior, the example window will start at 192
 
 **Center Behavior (1920 x 390)**
 
-Shows a static area of the world, scales it without distortion, and centers it in the window. In this case, borders are added to the left and right sides of the window, however they blend in with the clear color.
+Shows a static area of the world, scales it without distortion, and centers it in the window. In this case, borders are added to the left and right sides of the window, however they blend in with the clear color in this example.
 
 This behavior is ideal if you want don't want to show more or less of the world as the window size changes. Your scenes may be constructed to show an exact amount of objects. Showing anything outside those bounds might result in gaining an unfair advantage or accidentally showing out-of-bounds areas. Showing less than what's intended might result in being blind to something the player is supposed to see.
 
@@ -100,9 +100,11 @@ Since all camera properties are exposed, there isn't a single utility function i
 local camera_id = hash("/starly")
 
 -- Move 10 units up and 10 units right.
--- The `starly.move()` function accounts for the `zoom` value, which is required for an intuitive user experience.
+-- The `starly.get_offset()` function accounts for zoom and rotation, which is required for an intuitive user experience.
+local position = go.get_position(camera_id)
 local distance = vmath.vector3(10, 10, 0)
-starly.move(camera_id, distance)
+local offset = starly.get_offset(camera_id, distance)
+go.set_position(position + offset, camera_id)
 
 -- Instead of moving by a distance, let's animate to an absolute position.
 local position = vmath.vector3(50, 50, 0)
@@ -129,14 +131,17 @@ For example, the default render script is 236 lines long. After stripping all of
 
 ## Variable API
 
-Module and camera variables can be accessed directly. Note that the prefix `c_` refers to a constant.
+**Module Variables**
+
+Note that the prefix `c_` refers to a constant.
 
 * `starly.c_display_width`: `number` Default width of the window, specified in the *game.project* file.
 * `starly.c_display_height`: `number` Default height of the window, specified in the *game.project* file.
-
 * `starly.c_behavior_center`: `hash` Center behavior value.
 * `starly.c_behavior_expand`: `hash` Expand behavior value.
 * `starly.c_behavior_stretch`: `hash` Stretch behavior value.
+
+**Camera Variables**
 
 * `starly[id].behavior`: `hash` See [configuration](#configuration) for details.
 * `starly[id].viewport_x`: `number` See [configuration](#configuration) for details.
@@ -218,6 +223,22 @@ Checks if a camera is shaking.
 
 ---
 
+### `m_starly.get_offset(id, distance, absolute)`
+
+Gets the position offset of a camera after moving `distance` units, accounting for zoom and rotation.
+
+**Parameters**
+
+* `id`: `hash` Camera game object id.
+* `distance`: `vector3` Position offset, before accounting for zoom and rotation.
+* `absolute`: `boolean` Determines if `distance` is in absolute world coordinates, which ignore rotation.
+
+**Returns**
+
+* `vector3`
+
+---
+
 ### `m_starly.get_world_area(id)`
 
 Gets the world area of a camera, which is defined as the rectangular area of the world that the camera can see, in world coordinates.
@@ -238,6 +259,8 @@ Gets the world area of a camera, which is defined as the rectangular area of the
 ### `m_starly.get_tight_world_area(id, positions)`
 
 Gets the center position, minimum zoom, and minimum world area of a camera that can see all `positions`.
+
+This function was inspired by Super Smash Bros, where the camera moves and zooms to center and include all characters, with only a small amount of padding to the sides of the window.
 
 **Parameters**
 
@@ -266,7 +289,7 @@ Converts screen coordinates to world coordinates.
 
 **Returns**
 
-* `vector3`
+* `vector3` or `nil`
 
 ---
 
@@ -281,4 +304,4 @@ Converts world coordinates to screen coordinates.
 
 **Returns**
 
-* `vector3`
+* `vector3` or `nil`

@@ -165,6 +165,24 @@ function m_starly.is_shaking(id)
 	return m_starly[id].shake_position and true or false
 end
 
+function m_starly.get_offset(id, distance, absolute)
+	local zoomed_distance = distance / m_starly[id].zoom
+	if not absolute then return zoomed_distance end
+	local rotation = go.get_rotation(id)
+	local offset = vmath.rotate(rotation, zoomed_distance)
+	return offset
+end
+
+function m_starly.get_world_area(id)
+	local _, _, viewport_width, viewport_height = get_viewport(id)
+	local world_position = go.get_position(id)
+	local area_x = world_position.x - viewport_width * 0.5 / m_starly[id].zoom
+	local area_y = world_position.y - viewport_height * 0.5 / m_starly[id].zoom
+	local area_width = viewport_width / m_starly[id].zoom
+	local area_height = viewport_height / m_starly[id].zoom
+	return area_x, area_y, area_width, area_height
+end
+
 function m_starly.get_tight_world_area(id, positions)
 	local min_x = positions[1].x
 	local min_y = positions[1].y
@@ -191,16 +209,6 @@ function m_starly.get_tight_world_area(id, positions)
 	local tight_zoom = m_starly[id].zoom * math.max(zoom_x, zoom_y)
 	local tight_area_x, tight_area_y, tight_area_width, tight_area_height = min_x, min_y, min_width, min_height
 	return tight_position, tight_zoom, tight_area_x, tight_area_y, tight_area_width, tight_area_height
-end
-
-function m_starly.get_world_area(id)
-	local _, _, viewport_width, viewport_height = get_viewport(id)
-	local world_position = go.get_position(id)
-	local area_x = world_position.x - viewport_width * 0.5 / m_starly[id].zoom
-	local area_y = world_position.y - viewport_height * 0.5 / m_starly[id].zoom
-	local area_width = viewport_width / m_starly[id].zoom
-	local area_height = viewport_height / m_starly[id].zoom
-	return area_x, area_y, area_width, area_height
 end
 
 function m_starly.screen_to_world(id, screen_x, screen_y, visible)
