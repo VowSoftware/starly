@@ -14,43 +14,19 @@ local m_starly = require "starly.starly"
 -- Properties
 --------------------------------------------------------------------------------
 
--- Behavior of the viewport and projection relative to the window size.
--- Behavior `center` shows a static area of the world, scales it without distortion, and centers it in the window. Borders are added to the window if necessary.
--- Behavior `expand` shows a dynamic area of the world, and doesn't scale or distort it.
--- Behavior `stretch` shows a static area of the world, and scales it with distortion.
 go.property("behavior", hash("center"))
-
--- Bottom-left of the viewport in screen space.
 go.property("viewport_x", 0)
 go.property("viewport_y", 0)
-
--- Size of the viewport in screen space.
--- Default values match the window size in an empty Defold project.
 go.property("viewport_width", 960)
 go.property("viewport_height", 640)
-
--- Clipping planes on the z axis.
--- Typically [-1, 1] for orthographic projections and [0.1, 1000] for perspective projections.
 go.property("near", -1)
 go.property("far", 1)
-
--- Orthographic zoom.
--- Values greater than 1 zoom in, whereas values less than 1 zoom out.
 go.property("zoom", 1)
-
--- Maximum and minimum zoom values.
 go.property("zoom_max", 1)
 go.property("zoom_min", 1)
-
--- Determines if an orthographic boundary should be enforced.
--- Restricts the camera to showing only a certain area of the world on the x and y axes.
 go.property("boundary", false)
-
--- Bottom-left of the boundary in world space.
 go.property("boundary_x", 0)
 go.property("boundary_y", 0)
-
--- Size of the boundary in world space.
 go.property("boundary_width", 0)
 go.property("boundary_height", 0)
 
@@ -59,13 +35,9 @@ go.property("boundary_height", 0)
 --------------------------------------------------------------------------------
 
 function init(self)
-	-- Register this camera with Starly.
-	-- If the prepackaged Starly game object is used, then the user doesn't have to call `m_starly.create()` manually.
 	m_starly.create(go.get_id())
 end
 
 function final(self)
-	-- Unregister this camera with Starly.
-	-- If the prepackaged Starly game object is used, then the user doesn't have to call `m_starly.destroy()` manually.
 	m_starly.destroy(go.get_id())
 end

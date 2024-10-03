@@ -10,7 +10,6 @@ local m_starly = {}
 -- Local Constants
 --------------------------------------------------------------------------------
 
--- Viewport and projection behaviors.
 local c_behavior_center = hash("center")
 local c_behavior_expand = hash("expand")
 local c_behavior_stretch = hash("stretch")
@@ -19,7 +18,6 @@ local c_behavior_stretch = hash("stretch")
 -- Module Constants
 --------------------------------------------------------------------------------
 
--- Default window size, specified in *game.project*.
 m_starly.c_display_width = sys.get_config_int("display.width")
 m_starly.c_display_height = sys.get_config_int("display.height")
 

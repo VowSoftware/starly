@@ -2,5 +2,5 @@ default_animation: "logo"
 material: "/builtins/materials/sprite.material"
 textures {
   sampler: "texture_sampler"
-  texture: "/atlases/logo.atlas"
+  texture: "/example/atlases/logo.atlas"
 }

@@ -8,38 +8,50 @@
 -- Dependencies
 --------------------------------------------------------------------------------
 
+-- Import Starly to interact with the camera.
 local m_starly = require "starly.starly"
 
 --------------------------------------------------------------------------------
 -- Constants
 --------------------------------------------------------------------------------
 
+-- Starly game object id.
+-- This is passed to the Starly API to control a specific camera.
 local c_id_starly = hash("/starly")
 
--- Default clear color, specified in *game.project*.
+-- Default render target's clear color.
 local c_clear_color = vmath.vector4(sys.get_config_number("render.clear_color_red"), sys.get_config_number("render.clear_color_green"), sys.get_config_number("render.clear_color_blue"), sys.get_config_number("render.clear_color_alpha"))
 
+-- Default render target's clear values.
+-- This simple example only requires a color buffer.
 local c_default_buffer_values = { [graphics.BUFFER_TYPE_COLOR0_BIT] = c_clear_color }
-
---------------------------------------------------------------------------------
--- Variables
---------------------------------------------------------------------------------
-
-local v_predicate_tile = nil
 
 --------------------------------------------------------------------------------
 -- Engine Functions
 --------------------------------------------------------------------------------
 
 function init(self)
-	v_predicate_tile = render.predicate({ "tile" })
+	-- Create the `tile` predicate, which is the default predicate for sprites.
+	self.c_predicate_tile = render.predicate({ "tile" })
 end
 
 function update(self, dt)
+	-- Activate whichever camera should be used for the following draw calls.
+	-- Internally, this sets the engine's viewport, view, and projection.
 	m_starly.activate(c_id_starly)
+
+	-- Clear the window.
 	render.clear(c_default_buffer_values)
+
+	-- Use standard alpha blending to draw sprites with a transparent background.
 	render.set_blend_func(graphics.BLEND_FACTOR_SRC_ALPHA, graphics.BLEND_FACTOR_ONE_MINUS_SRC_ALPHA)
+
+	-- Enable alpha blending.
 	render.enable_state(graphics.STATE_BLEND)
-	render.draw(v_predicate_tile)
+
+	-- Draw all sprites.
+	render.draw(self.c_predicate_tile)
+
+	-- Disable alpha blending.
 	render.disable_state(graphics.STATE_BLEND)
 end

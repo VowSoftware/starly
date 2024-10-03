@@ -8,30 +8,25 @@
 -- Dependencies
 --------------------------------------------------------------------------------
 
+-- Import Starly to interact with the camera.
 local m_starly = require "starly.starly"
 
 --------------------------------------------------------------------------------
 -- Constants
 --------------------------------------------------------------------------------
 
--- Message ids.
+-- Engine messages.
 local c_msg_acquire_input_focus = hash("acquire_input_focus")
 
--- Action ids in `on_input()`.
+-- Engine `action_id` values.
 local c_mouse_wheel_up = hash("mouse_wheel_up")
 local c_mouse_wheel_down = hash("mouse_wheel_down")
 local c_mouse_button_middle = hash("mouse_button_middle")
 local c_key_space = hash("key_space")
 
--- Game object ids.
+-- Starly game object id.
+-- This is passed to the Starly API to control a specific camera.
 local c_id_starly = hash("/starly")
-
---------------------------------------------------------------------------------
--- Variables
---------------------------------------------------------------------------------
-
--- Determines if the middle mouse button is down, allowing for camera movement.
-local v_moving = false
 
 --------------------------------------------------------------------------------
 -- Engine Functions
@@ -42,24 +37,31 @@ function init(self)
 end
 
 function on_input(self, action_id, action)
+	-- If the mouse moves and the middle mouse button is down, then move the camera accordingly.
+	-- Movement will be restricted by the camera's `boundary`, if enabled.
 	if not action_id then
-		if v_moving then
+		if self.v_moving then
 			local offset = vmath.vector3(-action.screen_dx, -action.screen_dy, 0)
 			m_starly.move(c_id_starly, offset)
 		end
 	elseif action.pressed then
+		-- If the mouse wheel is scrolled, the zoom in or out by a factor of 4.
+		-- Zoom will be restricted by the camera's `zoom_max` and `zoom_min`.
 		if action_id == c_mouse_wheel_up then
 			m_starly.zoom(c_id_starly, 4)
 		elseif action_id == c_mouse_wheel_down then
 			m_starly.zoom(c_id_starly, -4)
+		-- If the middle mouse button is down, then enable camera movement.
 		elseif action_id == c_mouse_button_middle then
-			v_moving = true
+			self.v_moving = true
+		-- If the space bar is pressed, then shake the camera.
 		elseif action_id == c_key_space then
 			m_starly.shake(c_id_starly, 10, 0.125, 10, 0.75, 0.75)
 		end
+	-- If the middle mouse button is released, then disable camera movement.
 	elseif action.released then
 		if action_id == c_mouse_button_middle then
-			v_moving = false
+			self.v_moving = false
 		end
 	end
 end

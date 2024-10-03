@@ -1,15 +1,15 @@
 name: "main"
 instances {
   id: "logo_center"
-  prototype: "/objects/logo.go"
+  prototype: "/example/objects/logo.go"
 }
 instances {
   id: "controller"
-  prototype: "/objects/controller.go"
+  prototype: "/example/objects/controller.go"
 }
 instances {
   id: "logo_left"
-  prototype: "/objects/logo.go"
+  prototype: "/example/objects/logo.go"
   position {
     x: -948.0
   }
@@ -20,7 +20,7 @@ instances {
 }
 instances {
   id: "logo_right"
-  prototype: "/objects/logo.go"
+  prototype: "/example/objects/logo.go"
   position {
     x: 948.0
   }
@@ -31,14 +31,14 @@ instances {
 }
 instances {
   id: "logo_up"
-  prototype: "/objects/logo.go"
+  prototype: "/example/objects/logo.go"
   position {
     y: 528.0
   }
 }
 instances {
   id: "logo_down"
-  prototype: "/objects/logo.go"
+  prototype: "/example/objects/logo.go"
   position {
     y: -528.0
   }
@@ -96,7 +96,7 @@ instances {
 }
 instances {
   id: "logo_up_left"
-  prototype: "/objects/logo.go"
+  prototype: "/example/objects/logo.go"
   position {
     x: -948.0
     y: 528.0
@@ -108,7 +108,7 @@ instances {
 }
 instances {
   id: "logo_up_right"
-  prototype: "/objects/logo.go"
+  prototype: "/example/objects/logo.go"
   position {
     x: 948.0
     y: 528.0
@@ -120,7 +120,7 @@ instances {
 }
 instances {
   id: "logo_down_right"
-  prototype: "/objects/logo.go"
+  prototype: "/example/objects/logo.go"
   position {
     x: 948.0
     y: -528.0
@@ -132,7 +132,7 @@ instances {
 }
 instances {
   id: "logo_down_left"
-  prototype: "/objects/logo.go"
+  prototype: "/example/objects/logo.go"
   position {
     x: -948.0
     y: -528.0
