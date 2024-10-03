@@ -39,7 +39,39 @@ Each Starly game object is an independent camera. It contains a script component
 
 ## Behaviors
 
-// todo
+To demonstrate the affect of each behavior, the example window will start at 1920 x 1080, then non-uniformly scale down to 1920 x 390.
+
+**Any Behavior (1920 x 1080)**
+
+![normal](https://github.com/user-attachments/assets/5a1551b5-0f2a-4491-8db1-b2017f5bcd10)
+
+**Center Behavior (1920 x 390)**
+
+Shows a static area of the world, scales it without distortion, and centers it in the window. In this case, borders are added to the left and right sides of the window, however they blend in with the clear color.
+
+This behavior is ideal if you want don't want to show more or less of the world as the window size changes. Your scenes may be constructed to show an exact amount of objects. Showing anything outside those bounds might result in gaining an unfair advantage or accidentally showing out-of-bounds areas. Showing less than what's intended might result in being blind to something the player is supposed to see.
+
+This is arguably the most common use case, so it's set as the default behavior value.
+
+![center](https://github.com/user-attachments/assets/bdb21f34-45f5-4bec-b206-c7afef36c5a8)
+
+**Expand Behavior (1920 x 390)**
+
+Shows a dynamic area of the world, and doesn't scale or distort it.
+
+Your scenes may be constructed without an exact amount of objects in mind to show simultaneously. This might be ideal for games where the player explores a large map.
+
+![expand](https://github.com/user-attachments/assets/a024d941-2797-469b-bcda-4022aca1869b)
+
+**Stretch Behavior (1920 x 390)**
+
+Shows a static area of the world, and scales it with distortion.
+
+Many older games were designed to only run on specific machines where the screen resolution was known to the developers. For example, making a game for the Nintendo DS doesn't require adaptive projection or viewport logic because all Nintendo DS systems share a common screen resolution.
+
+Nowadays, this behavior is uncommon, but it is provided anyway for completeness.
+
+![stretch](https://github.com/user-attachments/assets/27a6b9eb-4e36-4306-be92-79eca486a4b5)
 
 ## Runtime Edits and Animations
 
