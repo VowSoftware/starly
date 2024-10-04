@@ -14,7 +14,7 @@ Supporting 2D games allows Starly to implement interesting, creative, and proven
 
 Other camera libraries guard certain properties with getter and setter functions to abstract management of internal variables. This causes confusion and frustration when trying to edit those properties at runtime, especially when dealing with animation. **Starly remedies this by allowing all properties to be edited or animated at runtime without getters and setters.**
 
-The default render pipeline and all other camera libraries require you to include someone else's code inside your render script. For example, the default render script contains a subset of projection calculation functions, performs maintainence on camera properties each frame, and captures messages in its `on_message()` function that are required to properly update cameras. Other camera libraries suffer from similar requirements. It's rare that a render script doesn't need to be heavily edited, which results in an irritating copy-paste-edit workflow for render scripts, forcing the user to work around what was already written by somebody else. **Starly remedies this by being entirely self-contained in a single Lua module.** It doesn't make any assumptions about the user's render script. An example render script is available for reference, however you are encouraged to write your own based on your specific requirements.
+The default render pipeline and all other camera libraries require you to include someone else's code inside your render script. For example, the default render script contains a subset of projection calculation functions, performs maintainence on camera properties each frame, and captures messages in its `on_message()` function that are required to properly update cameras. Other camera libraries suffer from similar requirements. It's rare that a render script doesn't need to be heavily edited, which results in an irritating copy-paste-edit workflow for render scripts, forcing the user to work around what was already written by somebody else. **Starly remedies this by being entirely self-contained in a single Lua module.**
 
 ## Installation
 
@@ -126,11 +126,17 @@ Starly provides a feature-rich render script. It includes organized configuratio
 
 **Note however that this render script is only a template, not a complete solution.**
 
-Most games require a custom render sequence in the render script's `update()` function. Therefore, you are required to write `update()` from scratch to meet your specific requirements. The decision to omit a pre-written render sequence was made to encourage Defold users to learn how their games are actually drawing graphics to the screen, rather than relying on a script that: (1) was written by somebody else, (2) for a greatly generalized and overly simplistic scenario, (3) that potentially performs many unnecessary operations, (4) instills a sense of learned helplessness, (5) and promotes ignorance of how to create much more graphically interesting and creative games.
+Most games require a custom `update()` function in the render script. Therefore, you are required to write `update()` from scratch to meet your specific requirements. The decision to omit a pre-written render sequence was made to encourage Defold users to learn how their games are actually drawing graphics to the screen, rather than relying on a script that:
+
+* was written by somebody else,
+* for a greatly generalized and overly simplistic scenario,
+* potentially performing many unnecessary operations,
+* instilling a sense of learned helplessness,
+* and promoting ignorance of how to create more graphically interesting and creative games.
 
 You are always encouraged to write your own render script from scratch, especially since Starly offloads all camera logic and state management you see in the default script. This allows for a minimum viable render script in just a few lines of code.
 
-In the `update()` function, a camera should be activated before any making any draw calls. Activating a camera simply updates the engine's viewport, view, and projection, while also returning its frustum for culling purposes.
+In the `update()` function, a camera should be activated before making any draw calls. Activating a camera simply updates the engine's viewport, view, and projection, while also returning its frustum for culling purposes.
 
 ```
 -- Camera game object id.
@@ -159,14 +165,16 @@ Note that the prefix `c_` refers to a constant.
 
 **Camera Variables**
 
-* `starly[id].behavior`: `hash` See [configuration](#configuration) for details.
-* `starly[id].viewport_x`: `number` See [configuration](#configuration) for details.
-* `starly[id].viewport_y`: `number` See [configuration](#configuration) for details.
-* `starly[id].viewport_width`: `number` See [configuration](#configuration) for details.
-* `starly[id].viewport_height`: `number` See [configuration](#configuration) for details.
-* `starly[id].near`: `number` See [configuration](#configuration) for details.
-* `starly[id].far`: `number` See [configuration](#configuration) for details.
-* `starly[id].zoom`: `number` See [configuration](#configuration) for details.
+See [configuration](#configuration) for details.
+
+* `starly[id].behavior`: `hash`
+* `starly[id].viewport_x`: `number`
+* `starly[id].viewport_y`: `number`
+* `starly[id].viewport_width`: `number`
+* `starly[id].viewport_height`: `number`
+* `starly[id].near`: `number`
+* `starly[id].far`: `number`
+* `starly[id].zoom`: `number`
 
 ## Function API
 
