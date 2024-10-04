@@ -121,8 +121,16 @@ go.animate(camera_id, "position", go.PLAYBACK_ONCE_FORWARD, position, go.EASING_
 ```
 
 ## Render Script Integration
+ 
+Starly provides a feature-rich render script. It includes organized configuration for predicates and targets, automatic creation of predicates and targets, automatic and custom resize logic for targets, and more. The script is well-documented, with hints and explanations throughout. The example project also serves as a very simple reference for how to integrate it into your own project.
 
-Cameras must be activated in the render script before any making any draw calls. Activating a camera simply sets the engine's viewport, view, and projection.
+**Note however that this render script is only a template, not a complete solution.**
+
+Most games require a custom render sequence in the render script's `update()` function. Therefore, you are required to write `update()` from scratch to meet your specific requirements. The decision to omit a pre-written render sequence was made to encourage Defold users to learn how their games are actually drawing graphics to the screen, rather than relying on a script that: (1) was written by somebody else, (2) for a greatly generalized and overly simplistic scenario, (3) that potentially performs many unnecessary operations, (4) instills a sense of learned helplessness, (5) and promotes ignorance of how to create much more graphically interesting and creative games.
+
+You are always encouraged to write your own render script from scratch, especially since Starly offloads all camera logic and state management you see in the default script. This allows for a minimum viable render script in just a few lines of code.
+
+In the `update()` function, a camera should be activated before any making any draw calls. Activating a camera simply updates the engine's viewport, view, and projection, while also returning its frustum for culling purposes.
 
 ```
 -- Camera game object id.
@@ -134,10 +142,6 @@ local frustum = starly.activate(camera_id)
 -- Draw calls...
 render.draw(predicate, { frustum = frustum })
 ```
-
-An example render script is available for reference, however you are encouraged to write your own based on your specific requirements. This may seem intimidating to users who don't have much experience with Defold's render pipeline, however because Starly offloads all camera functionality to the *starly.lua* file, your render script should transform into a much shorter and simpler version of what you're used to.
-
-For example, the default render script is 236 lines long. After stripping all of the camera logic and replacing it with `starly.activate()`, the script is roughly half as long. Your render script will become solely focused on graphics, rather than also including complicated camera logic and state management.
 
 ## Variable API
 
@@ -188,7 +192,7 @@ Destroys a camera. This function is called automatically in the game object's sc
 
 ### `m_starly.activate(id)`
 
-Activates a camera. This function should be called in the user's render script before any making any draw calls.
+Activates a camera. This function should be called in the render script before any making any draw calls.
 
 **Parameters**
 
