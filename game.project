@@ -1,6 +1,6 @@
 [bootstrap]
 main_collection = /example/collections/main.collectionc
-render = /renders/camera.renderc
+render = /example/renders/camera.renderc
 
 [script]
 shared_state = 1
