@@ -32,9 +32,3 @@ game_binding = /builtins/input/all.input_bindingc
 [html5]
 cssfile = /builtins/manifests/web/dark_theme.css
 
-[render]
-clear_color_red = 0.114
-clear_color_green = 0.027
-clear_color_blue = 0.024
-clear_color_alpha = 1.0
-

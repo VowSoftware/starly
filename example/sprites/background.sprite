@@ -1,4 +1,4 @@
-default_animation: "logo"
+default_animation: "background"
 material: "/builtins/materials/sprite.material"
 textures {
   sampler: "texture_sampler"

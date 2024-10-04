@@ -12,6 +12,7 @@ local m_starly = {}
 
 m_starly.c_display_width = sys.get_config_int("display.width")
 m_starly.c_display_height = sys.get_config_int("display.height")
+m_starly.c_display_ratio = m_starly.c_display_width / m_starly.c_display_height
 
 m_starly.c_behavior_center = hash("center")
 m_starly.c_behavior_expand = hash("expand")
@@ -23,22 +24,35 @@ m_starly.c_behavior_stretch = hash("stretch")
 
 local function get_static_viewport(id)
 	local window_width, window_height = window.get_size()
-	local window_scale_x, window_scale_y = window_width / m_starly.c_display_width, window_height / m_starly.c_display_height
-	return m_starly[id].viewport_x * window_scale_x, m_starly[id].viewport_y * window_scale_y, m_starly[id].viewport_width * window_scale_x, m_starly[id].viewport_height * window_scale_y
+	local window_scale_x = window_width / m_starly.c_display_width
+	local window_scale_y = window_height / m_starly.c_display_height
+	local viewport_x = m_starly[id].viewport_x * window_scale_x
+	local viewport_y = m_starly[id].viewport_y * window_scale_y
+	local viewport_width = m_starly[id].viewport_width * window_scale_x
+	local viewport_height = m_starly[id].viewport_height * window_scale_y
+	return viewport_x, viewport_y, viewport_width, viewport_height
 end
 
 local function get_dynamic_viewport(id)
 	local window_width, window_height = window.get_size()
-	local window_scale_x, window_scale_y = window_width / m_starly.c_display_width, window_height / m_starly.c_display_height
-	if window_scale_x < window_scale_y then
-		local margin = (window_scale_y - window_scale_x) * window_height * 0.5
-		return m_starly[id].viewport_x * window_scale_x, m_starly[id].viewport_y * window_scale_y + margin, m_starly[id].viewport_width * window_scale_x, m_starly[id].viewport_height * window_scale_y - margin * 2
+	local window_scale_x = window_width / m_starly.c_display_width
+	local window_scale_y = window_height / m_starly.c_display_height
+	local viewport_x = m_starly[id].viewport_x * window_scale_x
+	local viewport_y = m_starly[id].viewport_y * window_scale_y
+	local viewport_width = m_starly[id].viewport_width * window_scale_x
+	local viewport_height = m_starly[id].viewport_height * window_scale_y
+	local window_ratio = window_width / window_height
+	if window_ratio < m_starly.c_display_ratio then
+		local proportional_window_height = m_starly.c_display_height * window_scale_x
+		local margin = (window_height - proportional_window_height) * 0.5
+		return viewport_x, viewport_y + margin, viewport_width, viewport_height - margin * 2
 	end
-	if window_scale_y < window_scale_x then
-		local margin = (window_scale_x - window_scale_y) * window_width * 0.5
-		return m_starly[id].viewport_x * window_scale_x + margin, m_starly[id].viewport_y * window_scale_y, m_starly[id].viewport_width * window_scale_x - margin * 2, m_starly[id].viewport_height * window_scale_y
+	if window_ratio > m_starly.c_display_ratio then
+		local proportional_window_width = m_starly.c_display_width * window_scale_y
+		local margin = (window_width - proportional_window_width) * 0.5
+		return viewport_x + margin, viewport_y, viewport_width - margin * 2, viewport_height
 	end
-	return m_starly[id].viewport_x * window_scale_x, m_starly[id].viewport_y * window_scale_y, m_starly[id].viewport_width * window_scale_x, m_starly[id].viewport_height * window_scale_y
+	return viewport_x, viewport_y, viewport_width, viewport_height
 end
 
 local function get_viewport(id)

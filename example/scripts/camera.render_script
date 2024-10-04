@@ -19,12 +19,9 @@ local m_starly = require "starly.starly"
 -- This is passed to the Starly API to control a specific camera.
 local c_id_starly = hash("/starly")
 
--- Default render target's clear color.
-local c_clear_color = vmath.vector4(sys.get_config_number("render.clear_color_red"), sys.get_config_number("render.clear_color_green"), sys.get_config_number("render.clear_color_blue"), sys.get_config_number("render.clear_color_alpha"))
-
 -- Default render target's clear values.
 -- This simple example only requires a color buffer.
-local c_default_buffer_values = { [graphics.BUFFER_TYPE_COLOR0_BIT] = c_clear_color }
+local c_default_buffer_values = { [graphics.BUFFER_TYPE_COLOR0_BIT] = vmath.vector4() }
 
 --------------------------------------------------------------------------------
 -- Engine Functions

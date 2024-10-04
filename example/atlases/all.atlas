@@ -1,4 +1,7 @@
 images {
   image: "/example/images/logo.png"
 }
+images {
+  image: "/example/images/background.png"
+}
 extrude_borders: 2

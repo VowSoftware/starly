@@ -2,6 +2,9 @@ name: "main"
 instances {
   id: "logo"
   prototype: "/example/objects/logo.go"
+  position {
+    z: 0.1
+  }
 }
 instances {
   id: "controller"
@@ -28,5 +31,9 @@ instances {
       type: PROPERTY_TYPE_NUMBER
     }
   }
+}
+instances {
+  id: "background"
+  prototype: "/example/objects/background.go"
 }
 scale_along_z: 0
