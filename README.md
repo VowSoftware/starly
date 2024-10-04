@@ -52,9 +52,9 @@ Shows a static area of the world, scales it without distortion, and centers it i
 
 This behavior is ideal if you want don't want to show more or less of the world as the window size changes. Your scenes may be constructed to show an exact amount of objects. Showing anything outside those bounds might result in gaining an unfair advantage or accidentally showing out-of-bounds areas. Showing less than what's intended might result in being blind to something the player is supposed to see.
 
-Examples include Super Meat Boy, Pokémon (Generations I - V), and VVVVVV.
+[VVVVVV](https://thelettervsixtim.es/) would have chosen this behavior.
 
-![center](https://github.com/user-attachments/assets/bdb21f34-45f5-4bec-b206-c7afef36c5a8)
+![center](https://github.com/user-attachments/assets/06e6c906-2c0a-4648-9f69-68c39fdd9361)
 
 **Expand Behavior (1920 x 390)**
 
@@ -62,25 +62,23 @@ Shows a dynamic area of the world, and doesn't scale or distort it.
 
 This behavior is ideal if you don't care how much of the world the player can see. There might be somewhat of an advantage to seeing more, there might not be. Graphics are never scaled and always match their intended size.
 
-Examples include Don't Starve, Terraria, and Necesse.
+[Don't Starve](https://www.klei.com/games/dont-starve) would have chosen this behavior.
 
 ![expand](https://github.com/user-attachments/assets/a024d941-2797-469b-bcda-4022aca1869b)
 
-**Mixed Behavior (1920 x 390)**
+**Mixed Behavior**
 
 Shows a dynamic area of the world, and scales it without distortion.
 
 This behavior is ideal if it doesn't really matter how much of the world the player can see, but you also want graphics to scale if possible. This is somewhat of a mix between `center` and `expand`, but borders are never added to the window.
 
-Examples include Minecraft, ???, and ???.
+[Minecraft](https://www.minecraft.net/en-us) would have chosen this behavior.
 
 **Stretch Behavior (1920 x 390)**
 
 Shows a static area of the world, and scales it with distortion.
 
-Many older games were designed to only run on specific machines where the screen resolution was known to the developers. For example, making a game for the Nintendo DS doesn't require adaptive projection or viewport logic because all Nintendo DS systems share a common screen resolution.
-
-Nowadays, this behavior is uncommon, but it is provided anyway for completeness.
+Many older games were designed to only run on specific machines where the screen resolution was known to the developers. For example, making a game for the Nintendo DS doesn't require adaptive projection or viewport logic because all Nintendo DS systems share a common screen resolution. Nowadays, this behavior is uncommon, but it is provided anyway for completeness.
 
 ![stretch](https://github.com/user-attachments/assets/27a6b9eb-4e36-4306-be92-79eca486a4b5)
 
