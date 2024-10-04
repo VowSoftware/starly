@@ -129,9 +129,10 @@ Cameras must be activated in the render script before any making any draw calls.
 local camera_id = hash("/starly")
 
 -- Activate the camera.
-starly.activate(camera_id)
+local frustum = starly.activate(camera_id)
 
 -- Draw calls...
+render.draw(predicate, { frustum = frustum })
 ```
 
 An example render script is available for reference, however you are encouraged to write your own based on your specific requirements. This may seem intimidating to users who don't have much experience with Defold's render pipeline, however because Starly offloads all camera functionality to the *starly.lua* file, your render script should transform into a much shorter and simpler version of what you're used to.
@@ -192,6 +193,10 @@ Activates a camera. This function should be called in the user's render script b
 **Parameters**
 
 * `id`: `hash` Camera game object id.
+
+**Returns**
+
+* `frustum`: `matrix4`
 
 ---
 

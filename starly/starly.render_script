@@ -25,10 +25,6 @@ local m_starly = require "starly.starly"
 -- Constants
 --------------------------------------------------------------------------------
 
--- Starly game object id.
--- This is passed to the Starly API to control a specific camera.
-local c_id_starly = hash("/starly")
-
 -- Engine messages.
 local c_msg_window_resized = hash("window_resized")
 
@@ -198,24 +194,6 @@ function update(self, dt)
 	-- Write your custom render sequence here.
 	-- Remember to call `m_starly.activate()` before submitting a draw call.
 	-- See Starly's example project for a very simple reference.
-
-	-- Activate the camera.
-	local frustum = m_starly.activate(c_id_starly)
-
-	-- Clear the window.
-	render.clear(c_targets.default.clear)
-
-	-- Use standard alpha blending to draw sprites with a transparent background.
-	render.set_blend_func(graphics.BLEND_FACTOR_SRC_ALPHA, graphics.BLEND_FACTOR_ONE_MINUS_SRC_ALPHA)
-
-	-- Enable alpha blending.
-	render.enable_state(graphics.STATE_BLEND)
-
-	-- Draw all sprites.
-	render.draw(c_predicates.tile.handle, { frustum = frustum })
-
-	-- Disable alpha blending.
-	render.disable_state(graphics.STATE_BLEND)
 end
 
 function on_message(self, message_id, message, sender)

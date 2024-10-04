@@ -168,6 +168,7 @@ function m_starly.activate(id)
 	render.set_viewport(viewport_x, viewport_y, viewport_width, viewport_height)
 	render.set_view(view)
 	render.set_projection(projection)
+	return projection * view
 end
 
 function m_starly.shake(id, count, duration, radius, duration_scalar, radius_scalar)
