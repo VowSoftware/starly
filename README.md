@@ -31,6 +31,7 @@ Each Starly game object is an independent camera. It contains a script component
 * **Behavior:** How the viewport and projection should react to changes in the window size.
   * Behavior `center` shows a static area of the world, scales it without distortion, and centers it in the window. Borders are added to the window if necessary.
   * Behavior `expand` shows a dynamic area of the world, and doesn't scale or distort it.
+  * Behavior `mixed` shows a dynamic area of the world, and scales it without distortion.
   * Behavior `stretch` shows a static area of the world, and scales it with distortion.
 * **Viewport X / Viewport Y:** Bottom-left of the viewport in screen space. For example, values (0, 0) on a 1920 x 1080 window start the viewport at the bottom-left corner of the window, whereas values (960, 540) start the viewport at the center of the window.
 * **Viewport Width / Viewport Height:** Size of the viewport in screen space. For example, values (1920, 1080) on a 1920 x 1080 window fill the entire window, whereas values (960, 540) fill one-fourth of the window.
@@ -47,11 +48,11 @@ To demonstrate the affect of each behavior, the example window will start at 192
 
 **Center Behavior (1920 x 390)**
 
-Shows a static area of the world, scales it without distortion, and centers it in the window. In this case, borders are added to the left and right sides of the window, however they blend in with the clear color in this example.
+Shows a static area of the world, scales it without distortion, and centers it in the window. In this case, borders are added to the left and right sides of the window.
 
 This behavior is ideal if you want don't want to show more or less of the world as the window size changes. Your scenes may be constructed to show an exact amount of objects. Showing anything outside those bounds might result in gaining an unfair advantage or accidentally showing out-of-bounds areas. Showing less than what's intended might result in being blind to something the player is supposed to see.
 
-This is arguably the most common use case, so it's set as the default behavior value.
+Examples include Super Meat Boy, Pokémon (Generations I - V), and VVVVVV.
 
 ![center](https://github.com/user-attachments/assets/bdb21f34-45f5-4bec-b206-c7afef36c5a8)
 
@@ -59,9 +60,19 @@ This is arguably the most common use case, so it's set as the default behavior v
 
 Shows a dynamic area of the world, and doesn't scale or distort it.
 
-Your scenes may be constructed without an exact amount of objects in mind to show simultaneously. This might be ideal for games where the player explores a large map.
+This behavior is ideal if you don't care how much of the world the player can see. There might be somewhat of an advantage to seeing more, there might not be. Graphics are never scaled and always match their intended size.
+
+Examples include Don't Starve, Terraria, and Necesse.
 
 ![expand](https://github.com/user-attachments/assets/a024d941-2797-469b-bcda-4022aca1869b)
+
+**Mixed Behavior (1920 x 390)**
+
+Shows a dynamic area of the world, and scales it without distortion.
+
+This behavior is ideal if it doesn't really matter how much of the world the player can see, but you also want graphics to scale if possible. This is somewhat of a mix between `center` and `expand`, but borders are never added to the window.
+
+Examples include Minecraft, ???, and ???.
 
 **Stretch Behavior (1920 x 390)**
 
@@ -140,6 +151,7 @@ Note that the prefix `c_` refers to a constant.
 * `starly.c_display_ratio`: `number` Default aspect ratio of the window.
 * `starly.c_behavior_center`: `hash` Center behavior value.
 * `starly.c_behavior_expand`: `hash` Expand behavior value.
+* `starly.c_behavior_mixed`: `hash` Mixed behavior value.
 * `starly.c_behavior_stretch`: `hash` Stretch behavior value.
 
 **Camera Variables**

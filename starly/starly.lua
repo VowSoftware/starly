@@ -16,6 +16,7 @@ m_starly.c_display_ratio = m_starly.c_display_width / m_starly.c_display_height
 
 m_starly.c_behavior_center = hash("center")
 m_starly.c_behavior_expand = hash("expand")
+m_starly.c_behavior_mixed = hash("mixed")
 m_starly.c_behavior_stretch = hash("stretch")
 
 --------------------------------------------------------------------------------
@@ -60,6 +61,8 @@ local function get_viewport(id)
 		return get_dynamic_viewport(id)
 	elseif m_starly[id].behavior == m_starly.c_behavior_expand then
 		return get_static_viewport(id)
+	elseif m_starly[id].behavior == m_starly.c_behavior_mixed then
+		return get_static_viewport(id)
 	elseif m_starly[id].behavior == m_starly.c_behavior_stretch then
 		return get_static_viewport(id)
 	end
@@ -71,28 +74,35 @@ local function get_view(id)
 end
 
 local function get_center_projection(id)
-	local left = -m_starly.c_display_width * 0.5 / m_starly[id].zoom
 	local right = m_starly.c_display_width * 0.5 / m_starly[id].zoom
-	local bottom = -m_starly.c_display_height * 0.5 / m_starly[id].zoom
 	local top = m_starly.c_display_height * 0.5 / m_starly[id].zoom
-	return vmath.matrix4_orthographic(left, right, bottom, top, m_starly[id].near, m_starly[id].far)
+	return vmath.matrix4_orthographic(-right, right, -top, top, m_starly[id].near, m_starly[id].far)
 end
 
 local function get_expand_projection(id)
 	local window_width, window_height = window.get_size()
-	local left = -window_width * 0.5 / m_starly[id].zoom
 	local right = window_width * 0.5 / m_starly[id].zoom
-	local bottom = -window_height * 0.5 / m_starly[id].zoom
 	local top = window_height * 0.5 / m_starly[id].zoom
-	return vmath.matrix4_orthographic(left, right, bottom, top, m_starly[id].near, m_starly[id].far)
+	return vmath.matrix4_orthographic(-right, right, -top, top, m_starly[id].near, m_starly[id].far)
+end
+
+local function get_mixed_projection(id)
+	local window_width, window_height = window.get_size()
+	local window_ratio = window_width / window_height
+	local right = m_starly.c_display_width * 0.5 / m_starly[id].zoom
+	local top = m_starly.c_display_height * 0.5 / m_starly[id].zoom
+	if window_ratio < m_starly.c_display_ratio then
+		right = top * window_ratio
+	elseif window_ratio > m_starly.c_display_ratio then
+		top = right / window_ratio
+	end
+	return vmath.matrix4_orthographic(-right, right, -top, top, m_starly[id].near, m_starly[id].far)
 end
 
 local function get_stretch_projection(id)
-	local left = -m_starly.c_display_width * 0.5 / m_starly[id].zoom
 	local right = m_starly.c_display_width * 0.5 / m_starly[id].zoom
-	local bottom = -m_starly.c_display_height * 0.5 / m_starly[id].zoom
 	local top = m_starly.c_display_height * 0.5 / m_starly[id].zoom
-	return vmath.matrix4_orthographic(left, right, bottom, top, m_starly[id].near, m_starly[id].far)
+	return vmath.matrix4_orthographic(-right, right, -top, top, m_starly[id].near, m_starly[id].far)
 end
 
 local function get_projection(id)
@@ -100,6 +110,8 @@ local function get_projection(id)
 		return get_center_projection(id)
 	elseif m_starly[id].behavior == m_starly.c_behavior_expand then
 		return get_expand_projection(id)
+	elseif m_starly[id].behavior == m_starly.c_behavior_mixed then
+		return get_mixed_projection(id)
 	elseif m_starly[id].behavior == m_starly.c_behavior_stretch then
 		return get_stretch_projection(id)
 	end
