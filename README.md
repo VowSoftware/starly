@@ -10,11 +10,11 @@ Please click the ☆ button on GitHub if this repository is useful. Thank you!
 
 Starly's goal is to provide a feature-rich orthographic camera solution, confined to a single Lua module, where all properties can be edited or animated at runtime.
 
-Supporting 2D games allows Starly to implement interesting, creative, and proven utility functions, without the complexity and redundancy that comes with simultaneously supporting 3D games.
+Exclusively supporting 2D games allows Starly to implement interesting, creative, and proven utility functions, without the complexity and redundancy that comes with simultaneously supporting 3D games.
 
-Other camera libraries guard certain properties with getter and setter functions to abstract management of internal variables. This causes confusion and frustration when trying to edit those properties at runtime, especially when dealing with animation. **Starly remedies this by allowing all properties to be edited or animated at runtime without getters and setters.**
+Other camera libraries guard certain properties with getter and setter functions to abstract management of internal variables. This causes confusion and frustration when trying to edit those properties at runtime, especially when dealing with animation. Starly remedies this by exposing all properties such that they can be edited or animated at runtime.
 
-The default render pipeline and all other camera libraries require you to include someone else's code inside your render script. For example, the default render script contains a subset of projection calculation functions, performs maintainence on camera properties each frame, and captures messages in its `on_message()` function that are required to properly update cameras. Other camera libraries suffer from similar requirements. It's rare that a render script doesn't need to be heavily edited, which results in an irritating copy-paste-edit workflow for render scripts, forcing the user to work around what was already written by somebody else. **Starly remedies this by being entirely self-contained in a single Lua module.**
+Other camera libraries require you to include someone else's code in your render script. For example, the default render script contains projection functions, performs maintainence on camera properties, and captures messages that are required to properly update cameras. It's rare that a render script doesn't need to be heavily edited, which results in an irritating copy-paste-edit workflow, forcing the user to work around what was already written by somebody else. Starly remedies this by being entirely self-contained in a single Lua module.
 
 ## Installation
 
@@ -109,7 +109,7 @@ Since all camera properties are exposed, there isn't a single utility function i
 local camera_id = hash("/starly")
 
 -- Move 10 units up and 10 units right.
--- The `starly.get_offset()` function accounts for zoom and rotation, which is required for an intuitive user experience.
+-- The `starly.get_offset()` function accounts for zoom and rotation.
 local position = go.get_position(camera_id)
 local distance = vmath.vector3(10, 10, 0)
 local offset = starly.get_offset(camera_id, distance)
@@ -124,9 +124,9 @@ go.animate(camera_id, "position", go.PLAYBACK_ONCE_FORWARD, position, go.EASING_
  
 Starly provides a feature-rich render script. It includes organized configuration for predicates and targets, automatic creation of predicates and targets, automatic and custom resize logic for targets, and more. The script is well-documented, with hints and explanations throughout. The example project also serves as a very simple reference for how to integrate it into your own project.
 
-**Note however that this render script is only a template, not a complete solution.**
+Note however that this render script is only a template, not a complete solution.
 
-Most games require a custom `update()` function in the render script. Therefore, you are required to write `update()` from scratch to meet your specific requirements. The decision to omit a pre-written render sequence was made to encourage Defold users to learn how their games are actually drawing graphics to the screen, rather than relying on a script that:
+Most games require a custom `update()` function in the render script. Therefore, you are required to write `update()` from scratch to meet your specific requirements. The decision to omit a pre-written `update()` was made to encourage Defold users to learn how their games are actually drawing graphics to the screen, rather than relying on a script that:
 
 * was written by somebody else,
 * for a greatly generalized and overly simplistic scenario,
