@@ -88,13 +88,13 @@ The game object's script simply forwards the above properties to the *starly.lua
 
 To interact with a camera, import the *starly.lua* module into any of your scripts.
 
-```
+```lua
 local starly = require "starly.starly"
 ```
 
 Camera data can be directly accessed by indexing the `starly` table by game object id.
 
-```
+```lua
 -- Camera game object id.
 local camera_id = hash("/starly")
 
@@ -104,7 +104,7 @@ starly[camera_id].zoom = starly[camera_id].zoom / 2
 
 Since all camera properties are exposed, there isn't a single utility function in the Starly module that can't be implemented manually. Regardless, it's recommended to use these utility functions, as they perform many useful calculations for you.
 
-```
+```lua
 -- Camera game object id.
 local camera_id = hash("/starly")
 
@@ -138,7 +138,7 @@ You are always encouraged to write your own render script from scratch, especial
 
 In the `update()` function, a camera should be activated before making any draw calls. Activating a camera simply updates the engine's viewport, view, and projection, while also returning its frustum for culling purposes.
 
-```
+```lua
 -- Camera game object id.
 local camera_id = hash("/starly")
 
