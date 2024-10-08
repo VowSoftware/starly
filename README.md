@@ -153,15 +153,13 @@ render.draw(predicate, { frustum = frustum })
 
 **Module Variables**
 
-Note that the prefix `c_` refers to a constant.
-
-* `starly.c_display_width`: `number` Default width of the window, specified in the *game.project* file.
-* `starly.c_display_height`: `number` Default height of the window, specified in the *game.project* file.
-* `starly.c_display_ratio`: `number` Default aspect ratio of the window.
-* `starly.c_behavior_center`: `hash` Center behavior value.
-* `starly.c_behavior_expand`: `hash` Expand behavior value.
-* `starly.c_behavior_mixed`: `hash` Mixed behavior value.
-* `starly.c_behavior_stretch`: `hash` Stretch behavior value.
+* `starly.display_width`: `number` Default width of the window, specified in the *game.project* file.
+* `starly.display_height`: `number` Default height of the window, specified in the *game.project* file.
+* `starly.display_ratio`: `number` Default aspect ratio of the window.
+* `starly.behavior_center`: `hash` Center behavior value.
+* `starly.behavior_expand`: `hash` Expand behavior value.
+* `starly.behavior_mixed`: `hash` Mixed behavior value.
+* `starly.behavior_stretch`: `hash` Stretch behavior value.
 
 **Camera Variables**
 
