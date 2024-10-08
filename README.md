@@ -212,6 +212,51 @@ Activates a camera. This function should be called in the render script before a
 
 ---
 
+### `m_starly.get_viewport(id)`
+
+Gets the viewport of a camera, in screen coordinates.
+
+**Parameters**
+
+* `id`: `hash` Camera game object id.
+
+**Returns**
+
+* `x`: `number` Left side of the rectangle.
+* `y`: `number` Bottom of the rectangle.
+* `width`: `number` Width of the rectangle.
+* `height`: `number` Height of the rectangle.
+
+---
+
+### `m_starly.get_view(id)`
+
+Gets the view of a camera.
+
+**Parameters**
+
+* `id`: `hash` Camera game object id.
+
+**Returns**
+
+* `view`: `matrix4`
+
+---
+
+### `m_starly.get_projection(id)`
+
+Gets the projection of a camera.
+
+**Parameters**
+
+* `id`: `hash` Camera game object id.
+
+**Returns**
+
+* `projection`: `matrix4`
+
+---
+
 ### `m_starly.shake(id, count, duration, radius, [duration_scalar = 1], [radius_scalar = 1])`
 
 Shakes a camera.

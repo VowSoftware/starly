@@ -10,14 +10,14 @@ local m_starly = {}
 -- Module Constants
 --------------------------------------------------------------------------------
 
-m_starly.c_display_width = sys.get_config_int("display.width")
-m_starly.c_display_height = sys.get_config_int("display.height")
-m_starly.c_display_ratio = m_starly.c_display_width / m_starly.c_display_height
+m_starly.g_display_width = sys.get_config_int("display.width")
+m_starly.g_display_height = sys.get_config_int("display.height")
+m_starly.g_display_ratio = m_starly.g_display_width / m_starly.g_display_height
 
-m_starly.c_behavior_center = hash("center")
-m_starly.c_behavior_expand = hash("expand")
-m_starly.c_behavior_mixed = hash("mixed")
-m_starly.c_behavior_stretch = hash("stretch")
+m_starly.g_behavior_center = hash("center")
+m_starly.g_behavior_expand = hash("expand")
+m_starly.g_behavior_mixed = hash("mixed")
+m_starly.g_behavior_stretch = hash("stretch")
 
 --------------------------------------------------------------------------------
 -- Local Functions
@@ -25,8 +25,8 @@ m_starly.c_behavior_stretch = hash("stretch")
 
 local function get_static_viewport(id)
 	local window_width, window_height = window.get_size()
-	local window_scale_x = window_width / m_starly.c_display_width
-	local window_scale_y = window_height / m_starly.c_display_height
+	local window_scale_x = window_width / m_starly.g_display_width
+	local window_scale_y = window_height / m_starly.g_display_height
 	local viewport_x = m_starly[id].viewport_x * window_scale_x
 	local viewport_y = m_starly[id].viewport_y * window_scale_y
 	local viewport_width = m_starly[id].viewport_width * window_scale_x
@@ -36,46 +36,29 @@ end
 
 local function get_dynamic_viewport(id)
 	local window_width, window_height = window.get_size()
-	local window_scale_x = window_width / m_starly.c_display_width
-	local window_scale_y = window_height / m_starly.c_display_height
+	local window_scale_x = window_width / m_starly.g_display_width
+	local window_scale_y = window_height / m_starly.g_display_height
 	local viewport_x = m_starly[id].viewport_x * window_scale_x
 	local viewport_y = m_starly[id].viewport_y * window_scale_y
 	local viewport_width = m_starly[id].viewport_width * window_scale_x
 	local viewport_height = m_starly[id].viewport_height * window_scale_y
 	local window_ratio = window_width / window_height
-	if window_ratio < m_starly.c_display_ratio then
-		local proportional_window_height = m_starly.c_display_height * window_scale_x
+	if window_ratio < m_starly.g_display_ratio then
+		local proportional_window_height = m_starly.g_display_height * window_scale_x
 		local margin = (window_height - proportional_window_height) * 0.5
 		return viewport_x, viewport_y + margin, viewport_width, viewport_height - margin * 2
 	end
-	if window_ratio > m_starly.c_display_ratio then
-		local proportional_window_width = m_starly.c_display_width * window_scale_y
+	if window_ratio > m_starly.g_display_ratio then
+		local proportional_window_width = m_starly.g_display_width * window_scale_y
 		local margin = (window_width - proportional_window_width) * 0.5
 		return viewport_x + margin, viewport_y, viewport_width - margin * 2, viewport_height
 	end
 	return viewport_x, viewport_y, viewport_width, viewport_height
 end
 
-local function get_viewport(id)
-	if m_starly[id].behavior == m_starly.c_behavior_center then
-		return get_dynamic_viewport(id)
-	elseif m_starly[id].behavior == m_starly.c_behavior_expand then
-		return get_static_viewport(id)
-	elseif m_starly[id].behavior == m_starly.c_behavior_mixed then
-		return get_static_viewport(id)
-	elseif m_starly[id].behavior == m_starly.c_behavior_stretch then
-		return get_static_viewport(id)
-	end
-end
-
-local function get_view(id)
-	local camera_url = msg.url(m_starly[id].socket, id, "camera")
-	return camera.get_view(camera_url)
-end
-
 local function get_center_projection(id)
-	local right = m_starly.c_display_width * 0.5 / m_starly[id].zoom
-	local top = m_starly.c_display_height * 0.5 / m_starly[id].zoom
+	local right = m_starly.g_display_width * 0.5 / m_starly[id].zoom
+	local top = m_starly.g_display_height * 0.5 / m_starly[id].zoom
 	return vmath.matrix4_orthographic(-right, right, -top, top, m_starly[id].near, m_starly[id].far)
 end
 
@@ -89,32 +72,20 @@ end
 local function get_mixed_projection(id)
 	local window_width, window_height = window.get_size()
 	local window_ratio = window_width / window_height
-	local right = m_starly.c_display_width * 0.5 / m_starly[id].zoom
-	local top = m_starly.c_display_height * 0.5 / m_starly[id].zoom
-	if window_ratio < m_starly.c_display_ratio then
+	local right = m_starly.g_display_width * 0.5 / m_starly[id].zoom
+	local top = m_starly.g_display_height * 0.5 / m_starly[id].zoom
+	if window_ratio < m_starly.g_display_ratio then
 		right = top * window_ratio
-	elseif window_ratio > m_starly.c_display_ratio then
+	elseif window_ratio > m_starly.g_display_ratio then
 		top = right / window_ratio
 	end
 	return vmath.matrix4_orthographic(-right, right, -top, top, m_starly[id].near, m_starly[id].far)
 end
 
 local function get_stretch_projection(id)
-	local right = m_starly.c_display_width * 0.5 / m_starly[id].zoom
-	local top = m_starly.c_display_height * 0.5 / m_starly[id].zoom
+	local right = m_starly.g_display_width * 0.5 / m_starly[id].zoom
+	local top = m_starly.g_display_height * 0.5 / m_starly[id].zoom
 	return vmath.matrix4_orthographic(-right, right, -top, top, m_starly[id].near, m_starly[id].far)
-end
-
-local function get_projection(id)
-	if m_starly[id].behavior == m_starly.c_behavior_center then
-		return get_center_projection(id)
-	elseif m_starly[id].behavior == m_starly.c_behavior_expand then
-		return get_expand_projection(id)
-	elseif m_starly[id].behavior == m_starly.c_behavior_mixed then
-		return get_mixed_projection(id)
-	elseif m_starly[id].behavior == m_starly.c_behavior_stretch then
-		return get_stretch_projection(id)
-	end
 end
 
 local function check_clip_space(clip_x, clip_y)
@@ -162,13 +133,42 @@ function m_starly.destroy(id)
 end
 
 function m_starly.activate(id)
-	local viewport_x, viewport_y, viewport_width, viewport_height = get_viewport(id)
-	local view = get_view(id)
-	local projection = get_projection(id)
+	local viewport_x, viewport_y, viewport_width, viewport_height = m_starly.get_viewport(id)
+	local view = m_starly.get_view(id)
+	local projection = m_starly.get_projection(id)
 	render.set_viewport(viewport_x, viewport_y, viewport_width, viewport_height)
 	render.set_view(view)
 	render.set_projection(projection)
 	return projection * view
+end
+
+function m_starly.get_viewport(id)
+	if m_starly[id].behavior == m_starly.g_behavior_center then
+		return get_dynamic_viewport(id)
+	elseif m_starly[id].behavior == m_starly.g_behavior_expand then
+		return get_static_viewport(id)
+	elseif m_starly[id].behavior == m_starly.g_behavior_mixed then
+		return get_static_viewport(id)
+	elseif m_starly[id].behavior == m_starly.g_behavior_stretch then
+		return get_static_viewport(id)
+	end
+end
+
+function m_starly.get_view(id)
+	local camera_url = msg.url(m_starly[id].socket, id, "camera")
+	return camera.get_view(camera_url)
+end
+
+function m_starly.get_projection(id)
+	if m_starly[id].behavior == m_starly.g_behavior_center then
+		return get_center_projection(id)
+	elseif m_starly[id].behavior == m_starly.g_behavior_expand then
+		return get_expand_projection(id)
+	elseif m_starly[id].behavior == m_starly.g_behavior_mixed then
+		return get_mixed_projection(id)
+	elseif m_starly[id].behavior == m_starly.g_behavior_stretch then
+		return get_stretch_projection(id)
+	end
 end
 
 function m_starly.shake(id, count, duration, radius, duration_scalar, radius_scalar)
@@ -201,7 +201,7 @@ function m_starly.get_offset(id, distance, absolute)
 end
 
 function m_starly.get_world_area(id)
-	local _, _, viewport_width, viewport_height = get_viewport(id)
+	local _, _, viewport_width, viewport_height = m_starly.get_viewport(id)
 	local world_position = go.get_position(id)
 	local area_x = world_position.x - viewport_width * 0.5 / m_starly[id].zoom
 	local area_y = world_position.y - viewport_height * 0.5 / m_starly[id].zoom
@@ -239,8 +239,8 @@ function m_starly.get_tight_world_area(id, positions)
 end
 
 function m_starly.screen_to_world(id, screen_x, screen_y, visible)
-	local viewport_x, viewport_y, viewport_width, viewport_height = get_viewport(id)
-	local inverse_frustum = vmath.inv(get_projection(id) * get_view(id))
+	local viewport_x, viewport_y, viewport_width, viewport_height = m_starly.get_viewport(id)
+	local inverse_frustum = vmath.inv(m_starly.get_projection(id) * m_starly.get_view(id))
 	local clip_x = (screen_x - viewport_x) / viewport_width * 2 - 1
 	local clip_y = (screen_y - viewport_y) / viewport_height * 2 - 1
 	if visible and not check_clip_space(clip_x, clip_y) then return end
@@ -249,8 +249,8 @@ function m_starly.screen_to_world(id, screen_x, screen_y, visible)
 end
 
 function m_starly.world_to_screen(id, world_position, visible)
-	local _, _, viewport_width, viewport_height = get_viewport(id)
-	local frustum = get_projection(id) * get_view(id)
+	local _, _, viewport_width, viewport_height = m_starly.get_viewport(id)
+	local frustum = m_starly.get_projection(id) * m_starly.get_view(id)
 	local clip_position = frustum * vmath.vector4(world_position.x, world_position.y, 0, 1)
 	if visible and not check_clip_space(clip_position.x, clip_position.y) then return end
 	local screen_x = (clip_position.x + 1) * 0.5 * viewport_width
