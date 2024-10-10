@@ -22,26 +22,26 @@
 local m_starly = require "starly.starly"
 
 --------------------------------------------------------------------------------
--- Constants
+-- Local Variables
 --------------------------------------------------------------------------------
 
 -- Starly game object id.
 -- This is passed to the Starly API to control a specific camera.
-local c_id_starly = hash("/starly")
+local g_id_starly = hash("/starly")
 
 -- Engine messages.
-local c_msg_window_resized = hash("window_resized")
+local g_msg_window_resized = hash("window_resized")
 
 -- Default clear color, specified in the *game.project* file.
-local c_clear_color = vmath.vector4(sys.get_config_number("render.clear_color_red"), sys.get_config_number("render.clear_color_green"), sys.get_config_number("render.clear_color_blue"), sys.get_config_number("render.clear_color_alpha"))
+local g_clear_color = vmath.vector4(sys.get_config_number("render.clear_color_red"), sys.get_config_number("render.clear_color_green"), sys.get_config_number("render.clear_color_blue"), sys.get_config_number("render.clear_color_alpha"))
 
 -- Contains all predicates.
 --
 -- Predicate handles are created in the `create_predicates()` function.
 -- To add a new predicate, simply add a new table alongside the existing tables.
 --
--- Example: `render.draw(c_predicates.tile.handle)`
-local c_predicates =
+-- Example: `render.draw(g_predicates.tile.handle)`
+local g_predicates =
 {
 	model =
 	{
@@ -91,9 +91,9 @@ local c_predicates =
 -- If your custom target requires more nuanced resizing or shouldn't be resized,
 -- then initialize `resize` to `false` and add custom logic to the `resize_targets()` function.
 --
--- Example: `render.set_render_target(c_targets.default.handle)`
---          `render.clear(c_targets.default.clear)`
-local c_targets =
+-- Example: `render.set_render_target(g_targets.default.handle)`
+--          `render.clear(g_targets.default.clear)`
+local g_targets =
 {
 	default =
 	{
@@ -106,7 +106,7 @@ local c_targets =
 		stencil_texture_bit = false,
 		clear =
 		{
-			[graphics.BUFFER_TYPE_COLOR0_BIT] = c_clear_color,
+			[graphics.BUFFER_TYPE_COLOR0_BIT] = g_clear_color,
 			[graphics.BUFFER_TYPE_DEPTH_BIT] = 1,
 			[graphics.BUFFER_TYPE_STENCIL_BIT] = 0
 		}
@@ -117,17 +117,17 @@ local c_targets =
 -- Local Functions
 --------------------------------------------------------------------------------
 
--- Creates all predicates in the `c_predicates` table.
+-- Creates all predicates in the `g_predicates` table.
 local function create_predicates()
-	for _, predicate in pairs(c_predicates) do
+	for _, predicate in pairs(g_predicates) do
 		predicate.handle = render.predicate(predicate.tags)
 	end
 end
 
--- Creates all targets in the `c_targets` table.
+-- Creates all targets in the `g_targets` table.
 local function create_targets()
 	local window_width, window_height = render.get_window_width(), render.get_window_height()
-	for name, target in pairs(c_targets) do
+	for name, target in pairs(g_targets) do
 		-- Don't create this target if it's the default target.
 		-- Also don't create this target if it already has a handle,
 		-- which is the case for targets that were already created in a *.render_target* file.
@@ -167,11 +167,11 @@ local function create_targets()
 	end
 end
 
--- Resizes all targets in the `c_targets` table.
+-- Resizes all targets in the `g_targets` table.
 -- This function is called by the `on_message()` function.
 local function resize_targets()
 	local window_width, window_height = render.get_window_width(), render.get_window_height()
-	for name, target in pairs(c_targets) do
+	for name, target in pairs(g_targets) do
 		-- The default target is automatically resized by Defold, so don't resize it manually.
 		if name ~= "default" then
 			if target.resize then
@@ -200,10 +200,10 @@ function update(self, dt)
 	-- See Starly's example project for a very simple reference.
 
 	-- Activate the camera.
-	local frustum = m_starly.activate(c_id_starly)
+	local frustum = m_starly.activate(g_id_starly)
 
 	-- Clear the window.
-	render.clear(c_targets.default.clear)
+	render.clear(g_targets.default.clear)
 
 	-- Use standard alpha blending to draw sprites with a transparent background.
 	render.set_blend_func(graphics.BLEND_FACTOR_SRC_ALPHA, graphics.BLEND_FACTOR_ONE_MINUS_SRC_ALPHA)
@@ -212,7 +212,7 @@ function update(self, dt)
 	render.enable_state(graphics.STATE_BLEND)
 
 	-- Draw all sprites.
-	render.draw(c_predicates.tile.handle, { frustum = frustum })
+	render.draw(g_predicates.tile.handle, { frustum = frustum })
 
 	-- Disable alpha blending.
 	render.disable_state(graphics.STATE_BLEND)
@@ -220,7 +220,7 @@ end
 
 function on_message(self, message_id, message, sender)
 	-- If the window is resized, then resize all relevant targets.
-	if message_id == c_msg_window_resized then
+	if message_id == g_msg_window_resized then
 		resize_targets()
 	end
 end

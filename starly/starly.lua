@@ -7,7 +7,7 @@
 local m_starly = {}
 
 --------------------------------------------------------------------------------
--- Module Constants
+-- Module Variables
 --------------------------------------------------------------------------------
 
 m_starly.g_display_width = sys.get_config_int("display.width")
