@@ -1,5 +1,7 @@
 # Starly
 
+**Note: I'm no longer active on this account, and therefore will not be maintaining or contributing to this project in the future. Please try the [Shutter](https://github.com/Klaleus/defold-shutter) library instead. It offers everything Starly offers, but does it in a slightly cleaner and more contribution-friendly way. It also doubles as a perspective (3D) camera solution.**
+
 Starly is a orthographic camera library for Defold.
 
 Please click the ☆ button on GitHub if this repository is useful. Thank you!
